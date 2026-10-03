@@ -357,7 +357,7 @@ const esmaVeritabani = [
     { no: 14, isim: "El-Musavvir", arapca: "الْمُصَوِّرُ", anlam: "Varlıklara şekil ve suret veren." },
     { no: 15, isim: "El-Gaffâr", arapca: "الْغَفَّارُ", anlam: "Günahları örten ve çokça bağışlayan." },
     { no: 16, isim: "El-Kahhâr", arapca: "الْقَهَّارُ", anlam: "Her şeye galip gelen, mutlak hâkim." },
-    { no: 17, isim: "El-Vehhâb", arapca: "الْوَهَّابُ", anlam: "Karşılıksız bolca ihsan eden." },
+    { no: 17, isim: "El-Vehhâب", arapca: "الْوَهَّابُ", anlam: "Karşılıksız bolca ihsan eden." },
     { no: 18, isim: "Er-Razzâk", arapca: "الرَّزَّاقُ", anlam: "Bütün canlıların rızkını veren." },
     { no: 19, isim: "El-Fettâh", arapca: "الْفَتَّاحُ", anlam: "Her türlü müşkülü çözen, kapıları açan." },
     { no: 20, isim: "El-Alîm", arapca: "الْعَلِيمُ", anlam: "Her şeyi en ince ayrıntısıyla bilen." },
@@ -434,7 +434,7 @@ const esmaVeritabani = [
     { no: 91, isim: "Ed-Dârr", arapca: "الضَّارُّ", anlam: "Elem ve zarar veren şeyleri yaratan." },
     { no: 92, isim: "En-Nâfi", arapca: "النَّافِعُ", anlam: "Faydalı şeyleri yaratan." },
     { no: 93, isim: "En-Nûr", arapca: "النُّورُ", anlam: "Alemleri aydınlatan nur." },
-    { no: 94, isim: "El-Hâdî", arapca: "الْهَادِي", anlam: "Hidayet veren, doğru yola ileten." },
+    { no: 94, isim: "El-Hâدî", arapca: "الْهَادِي", anlam: "Hidayet veren, doğru yola ileten." },
     { no: 95, isim: "El-Bedî", arapca: "الْبَدِيعُ", anlam: "Örneksiz ve eşsiz harikalar yaratan." },
     { no: 96, isim: "El-Bâkî", arapca: "الْبَاقِي", anlam: "Varlığının sonu olmayan." },
     { no: 97, isim: "El-Vâris", arapca: "الْوَارِثُ", anlam: "Her şeyin asıl sahibi ve varisi." },
@@ -625,7 +625,7 @@ function sonrakiVakitGuncelle() {
 }
 
 // =====================================================
-// 6. KUR'AN DİNLETİSİ
+// 6. KUR'AN DİNLETİSİ & EKLENEN YENİ FONKSİYONLAR
 // =====================================================
 const hafizVerileri = {
     alafasy: { server: "https://server8.mp3quran.net/afs/", name: "Mishary Alafasy" },
@@ -684,34 +684,67 @@ function kuranListesiniGuncelle() {
     });
 }
 
+// İstediğiniz Özel Fonksiyon Entegrasyonları (`initQuran`, `loadPage`, `playAudio`, `handleSearch` vb.)
+function initQuran() {
+    kuranListesiniGuncelle();
+}
+
+function loadPage(pageId) {
+    const targetNav = document.querySelector(`.nav-item[data-page="${pageId}"]`) || document.querySelector(`.nav-item`);
+    if (targetNav) {
+        sayfaDegistir(pageId, targetNav);
+    }
+}
+
+function playAudio(audioElementId) {
+    const audioEl = document.getElementById(audioElementId);
+    if (audioEl) {
+        audioEl.play().catch(err => console.log("Oynatma hatası:", err));
+    }
+}
+
+function handleSearch(query, category = 'all') {
+    const q = norm(query);
+    if (category === 'dualar' || category === 'all') {
+        const duaInput = document.getElementById('dua-arama');
+        if (duaInput) {
+            duaInput.value = query;
+            duaFiltrele();
+        }
+    }
+    if (category === 'esma' || category === 'all') {
+        const esmaInput = document.getElementById('esma-arama');
+        if (esmaInput) {
+            esmaInput.value = query;
+            esmaFiltrele();
+        }
+    }
+}
+
 // Aynı anda yalnızca bir ses çalsın + hata mesajı
 (function kuranSesYonetimi() {
     const kap = document.getElementById('kuran-ses-listesi');
-    kap.addEventListener('play', function (e) {
-        kap.querySelectorAll('audio').forEach(a => { if (a !== e.target) a.pause(); });
-        const hata = e.target.parentNode.querySelector('.audio-hata');
-        if (hata) hata.style.display = 'none';
-    }, true);
-    kap.addEventListener('error', function (e) {
-        if (e.target && e.target.tagName === 'SOURCE') {
-            const hata = e.target.parentNode.parentNode.querySelector('.audio-hata');
-            if (hata) hata.style.display = 'block';
-        }
-    }, true);
+    if (kap) {
+        kap.addEventListener('play', function (e) {
+            kap.querySelectorAll('audio').forEach(a => { if (a !== e.target) a.pause(); });
+            const hata = e.target.parentNode.querySelector('.audio-hata');
+            if (hata) hata.style.display = 'none';
+        }, true);
+        kap.addEventListener('error', function (e) {
+            if (e.target && e.target.tagName === 'SOURCE') {
+                const hata = e.target.parentNode.parentNode.querySelector('.audio-hata');
+                if (hata) hata.style.display = 'block';
+            }
+        }, true);
+    }
 })();
 
 // =====================================================
 // 7. HİCRİ TAKVİM, RESMİ VE DİNİ GÜNLER (HER YILA UYGUN)
 // =====================================================
-
-// Diyanet takvimiyle fark görürseniz buradan tüm hesabı ±1 gün kaydırabilirsiniz (örn. 1 veya -1)
 const HICRI_GUN_KAYDIRMA = 0;
-
-// Belirli bir yılın tarihlerini elle düzeltmek isterseniz (YYYY-MM-DD).
-// Örnek: { "2027": { "Ramazan Bayramı": "2027-03-09" } }
 const MANUEL_TARIH_DUZELTME = {};
 
-// Tercihen Intl (Umm al-Qura); desteklenmezse tablolu hesap kullanılır
 let hicriFormatci = null;
 try {
     const f = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {
@@ -720,7 +753,6 @@ try {
     if (/islamic/.test(f.resolvedOptions().calendar)) hicriFormatci = f;
 } catch (e) { hicriFormatci = null; }
 
-// Tablolu (Kuveyt algoritması) yedek hesap
 function hicriTablolu(dt) {
     const jdn = Math.floor(dt.getTime() / 86400000) + 2440588;
     let l = jdn - 1948440 + 10632;
@@ -734,7 +766,6 @@ function hicriTablolu(dt) {
     return { y: y, m: m, d: d };
 }
 
-// dt: UTC 12:00'a ayarlı Date
 function hicriHesapla(dt) {
     const kayik = new Date(dt.getTime() + HICRI_GUN_KAYDIRMA * 86400000);
     if (hicriFormatci) {
@@ -753,7 +784,6 @@ function utcOgle(y, m, d) { return new Date(Date.UTC(y, m, d, 12, 0, 0)); }
 function gunEkle(dt, n) { return new Date(dt.getTime() + n * 86400000); }
 function isoDt(dt) { return dt.toISOString().slice(0, 10); }
 
-// Hicri (ay-gün) kuralları: her yıl otomatik bulunur
 const DINI_KURALLAR = {
     '1-1':   { ad: 'Hicri Yılbaşı',           tur: 'dini',   gun: 1 },
     '1-10':  { ad: 'Aşure Günü',              tur: 'dini',   gun: 1 },
@@ -766,7 +796,6 @@ const DINI_KURALLAR = {
     '12-10': { ad: 'Kurban Bayramı',          tur: 'dini',   gun: 4, arefe: 'Kurban Bayramı Arefesi' }
 };
 
-// Sabit tarihli resmi bayram ve tatiller
 const RESMI_GUNLER = [
     { ad: 'Yılbaşı', ay: 1, gun: 1 },
     { ad: 'Ulusal Egemenlik ve Çocuk Bayramı', ay: 4, gun: 23 },
@@ -784,13 +813,11 @@ function yilEtkinlikleri(yil) {
     if (olayCache[yil]) return olayCache[yil];
     const liste = [];
 
-    // Resmi günler
     RESMI_GUNLER.forEach(r => {
         const iso = yil + '-' + pad2(r.ay) + '-' + pad2(r.gun);
         liste.push({ ad: r.ad, bas: iso, bit: iso, tur: 'resmi' });
     });
 
-    // Dini günler: yılın her gününü hicri takvime çevirip kuralları ara
     const ilk = utcOgle(yil, 0, 1);
     for (let i = 0; i < 366; i++) {
         const dt = gunEkle(ilk, i);
@@ -808,7 +835,6 @@ function yilEtkinlikleri(yil) {
             }
         }
 
-        // Regaib Kandili: Recep ayının ilk Cuma gecesi (perşembe akşamı)
         if (h.m === 7 && h.d <= 7 && dt.getUTCDay() === 5) {
             const per = gunEkle(dt, -1);
             if (per.getUTCFullYear() === yil) {
@@ -818,7 +844,6 @@ function yilEtkinlikleri(yil) {
         }
     }
 
-    // Elle düzeltmeler
     const duz = MANUEL_TARIH_DUZELTME[yil];
     if (duz) {
         liste.forEach(o => {
@@ -864,6 +889,7 @@ function bayramBannerGuncelle() {
 
     const o = bugunku[0];
     const banner = document.getElementById('today-banner');
+    if (!banner) return;
     let mesaj;
     if (o.tur === 'resmi') mesaj = 'Resmi bayramınız kutlu olsun!';
     else if (o.tur === 'kandil') mesaj = 'Bu akşam kandil gecesi. Kandiliniz mübarek olsun.';
@@ -871,8 +897,10 @@ function bayramBannerGuncelle() {
     else if (o.ad.indexOf('Bayram') !== -1) mesaj = 'Bayramınız mübarek olsun.';
     else mesaj = 'Mübarek gününüz kutlu olsun.';
 
-    document.getElementById('today-title').innerText = '🎉 Bugün ' + o.ad + '!';
-    document.getElementById('today-desc').innerText = mesaj;
+    const titleEl = document.getElementById('today-title');
+    const descEl = document.getElementById('today-desc');
+    if (titleEl) titleEl.innerText = '🎉 Bugün ' + o.ad + '!';
+    if (descEl) descEl.innerText = mesaj;
     banner.style.display = 'block';
 }
 
@@ -929,10 +957,12 @@ let bayramYili = new Date().getFullYear();
 let bayramFiltre = 'hepsi';
 
 function bayramListesiCiz() {
-    document.getElementById('bayram-yil').innerText = bayramYili;
+    const yilEl = document.getElementById('bayram-yil');
+    if (yilEl) yilEl.innerText = bayramYili;
     const bugun = bugunIso();
     const liste = yilEtkinlikleri(bayramYili).filter(o => bayramFiltre === 'hepsi' || o.tur === bayramFiltre);
     const kap = document.getElementById('bayram-listesi');
+    if (!kap) return;
 
     if (!liste.length) {
         kap.innerHTML = '<div class="empty-state">Kayıt yok.</div>';
@@ -987,13 +1017,15 @@ const meccaLng = 39.8262;
 let hedefKibleAci = 0;
 let kibleHazir = false;
 let pusulaAktif = false;
-let pusulaDonus = 0;      // sürekli (sarmayan) açı: ani 360° dönüşleri önler
+let pusulaDonus = 0;
 let pusulaYonVar = false;
 let pusulaIlkOlcum = true;
 let kibleYonde = false;
 
 function haritaKur() {
     if (map || typeof L === 'undefined') return;
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
     map = L.map('map').setView([39.9334, 32.8597], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
@@ -1004,6 +1036,7 @@ function haritaKur() {
 
 function kibleDurumYaz(metin, ok) {
     const el = document.getElementById('kible-durum');
+    if (!el) return;
     el.innerText = metin || '';
     el.classList.toggle('ok', !!ok);
 }
@@ -1030,15 +1063,18 @@ function konumuUygula(lat, lng, varsayilan) {
 
     hedefKibleAci = kibleAcisiHesapla(lat, lng);
     kibleHazir = true;
-    document.getElementById('kible-acisi').innerText = 'Kıble Açınız: ' + hedefKibleAci.toFixed(1) + '°';
-    document.getElementById('kible-mesafe').innerText =
+    const aciEl = document.getElementById('kible-acisi');
+    const mesafeEl = document.getElementById('kible-mesafe');
+    if (aciEl) aciEl.innerText = 'Kıble Açınız: ' + hedefKibleAci.toFixed(1) + '°';
+    if (mesafeEl) mesafeEl.innerText =
         'Kâbe\'ye yaklaşık uzaklık: ' + Math.round(mesafeKm(lat, lng)).toLocaleString('tr-TR') + ' km' +
         (varsayilan ? ' (konum izni verilmediği için Ankara baz alındı)' : '');
     pusulaCiz();
 }
 
 function kibleKonumAl() {
-    document.getElementById('kible-acisi').innerText = 'Konum alınıyor...';
+    const aciEl = document.getElementById('kible-acisi');
+    if (aciEl) aciEl.innerText = 'Konum alınıyor...';
     if (!navigator.geolocation) {
         konumuUygula(39.9334, 32.8597, true);
         return;
@@ -1061,9 +1097,9 @@ function pusulaCiz() {
 function pusulaOlayi(e) {
     let yon = null;
     if (typeof e.webkitCompassHeading === 'number') {
-        yon = e.webkitCompassHeading;                 // iOS: kuzeyden saat yönünde
+        yon = e.webkitCompassHeading;
     } else if (e.alpha !== null && e.alpha !== undefined && (e.absolute === true || e.type === 'deviceorientationabsolute')) {
-        yon = (360 - e.alpha) % 360;                  // Android: alpha saat yönünün tersi
+        yon = (360 - e.alpha) % 360;
     }
     if (yon === null) return;
 
@@ -1071,7 +1107,6 @@ function pusulaOlayi(e) {
         pusulaDonus = yon;
         pusulaIlkOlcum = false;
     } else {
-        // En kısa yoldan, yumuşatarak dön
         let delta = ((yon - (pusulaDonus % 360)) + 540) % 360 - 180;
         pusulaDonus += delta * 0.3;
     }
@@ -1108,7 +1143,6 @@ function pusulaBaslat() {
         kibleDurumYaz('Cihazınız yön sensörünü desteklemiyor.');
         return;
     }
-    // iOS 13+ izin ister
     if (typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(r => {
             if (r === 'granted') pusulaDinlemeyiBaslat();
@@ -1137,7 +1171,7 @@ function kibleSayfasiAcildi() {
     if (!kibleHazir) kibleKonumAl();
     if (typeof DeviceOrientationEvent !== 'undefined' &&
         typeof DeviceOrientationEvent.requestPermission !== 'function') {
-        pusulaDinlemeyiBaslat(); // Android: izin gerekmez
+        pusulaDinlemeyiBaslat();
     } else if (!pusulaAktif) {
         kibleDurumYaz('Pusulayı etkinleştirmek için "Pusulayı Başlat" düğmesine dokunun.');
     }
@@ -1150,8 +1184,10 @@ function sayfaDegistir(pageId, element) {
     document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-    document.getElementById('page-' + pageId).classList.add('active');
-    element.classList.add('active');
+    const targetPage = document.getElementById('page-' + pageId);
+    if (targetPage) targetPage.classList.add('active');
+    if (element) element.classList.add('active');
+    
     lsSet('sonSayfa', pageId);
     window.scrollTo(0, 0);
 
@@ -1176,14 +1212,15 @@ document.addEventListener('keydown', function (e) {
 document.addEventListener("DOMContentLoaded", function() {
     zikirCiz();
 
-    // Kayıtlı şehir
     const kayitliSehir = lsGet('sehir', 'Ankara');
     const sel = document.getElementById('sehir-secim');
-    if (sel.querySelector('option[value="' + kayitliSehir + '"]')) sel.value = kayitliSehir;
+    if (sel && sel.querySelector('option[value="' + kayitliSehir + '"]')) sel.value = kayitliSehir;
 
-    duaKategoriDegistir('dualari', document.querySelector('#page-dualar .vakit-tab'));
+    const ilkTab = document.querySelector('#page-dualar .vakit-tab');
+    if (ilkTab) duaKategoriDegistir('dualari', ilkTab);
+    
     esmalariYukle(esmaVeritabani);
-    kuranListesiniGuncelle();
+    initQuran(); // Kur'an ve hafız listesini ilkler
     bugunBilgisiYaz();
     siradakiBayramiHesapla();
     eskiVakitCachetemizle();
@@ -1191,13 +1228,12 @@ document.addEventListener("DOMContentLoaded", function() {
     if (lsGet('vakitModu', 'sehir') === 'gps') vakitleriKonumdanGetir();
     else vakitleriGuncelle();
 
-    // Canlı sayaçlar
     setInterval(function () {
         sonrakiVakitGuncelle();
-        if (document.getElementById('page-bayramlar').classList.contains('active')) geriSayimCiz();
+        const bayramPage = document.getElementById('page-bayramlar');
+        if (bayramPage && bayramPage.classList.contains('active')) geriSayimCiz();
     }, 1000);
 
-    // Gün değişince başlık ve vakitleri tazele
     let sonGun = bugunIso();
     setInterval(function () {
         const g = bugunIso();
@@ -1210,7 +1246,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }, 60000);
 
-    // Son açık sayfaya dön (Kıble hariç: izin istemlerini kendiliğinden tetiklemesin)
     const sonSayfa = lsGet('sonSayfa', 'zikir');
     if (sonSayfa !== 'zikir' && sonSayfa !== 'kible') {
         const nav = document.querySelector('.nav-item[data-page="' + sonSayfa + '"]');
