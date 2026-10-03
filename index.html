@@ -430,13 +430,6 @@
             outline: none;
         }
 
-        .audio-hata {
-            display: none;
-            margin-top: 6px;
-            font-size: 0.78rem;
-            color: #f87171;
-        }
-
         /* Pusula Kullanım Rehberi Kutusu */
         .compass-guide {
             background: rgba(223, 177, 91, 0.1);
@@ -568,50 +561,6 @@
             margin-top: 10px;
         }
 
-        /* Video bağlantı kartları */
-        .video-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 8px;
-            padding: 14px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, rgba(223, 177, 91, 0.15), rgba(15, 23, 42, 0.9));
-            border: 1px solid var(--gold);
-            color: var(--text-color);
-            text-decoration: none;
-        }
-
-        .video-link:active {
-            transform: scale(0.98);
-        }
-
-        .video-play {
-            width: 44px;
-            height: 44px;
-            min-width: 44px;
-            border-radius: 50%;
-            background: #ef4444;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-        }
-
-        .video-link-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            font-size: 0.9rem;
-        }
-
-        .video-link-text small {
-            color: var(--muted);
-            font-size: 0.78rem;
-        }
-
         /* Bayram / Dini günler */
         .bayram-hero {
             background: linear-gradient(135deg, rgba(223, 177, 91, 0.15), rgba(30, 41, 59, 1));
@@ -672,43 +621,6 @@
             color: var(--gold);
             font-size: 1.1rem;
         }
-
-        .yil-secici .icon-btn {
-            padding: 6px 14px;
-        }
-
-        .olay-satir {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .olay-satir:last-child { border-bottom: none; }
-        .olay-satir.gecmis { opacity: 0.45; }
-
-        .olay-satir.bugun {
-            background: rgba(16, 185, 129, 0.12);
-            border-radius: 8px;
-            padding-left: 8px;
-            padding-right: 8px;
-        }
-
-        .olay-ad { font-weight: bold; font-size: 0.92rem; }
-        .olay-tarih { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-
-        .olay-rozet {
-            font-size: 0.7rem;
-            padding: 3px 8px;
-            border-radius: 12px;
-            white-space: nowrap;
-        }
-
-        .rozet-resmi { background: rgba(239, 68, 68, 0.18); color: #fca5a5; }
-        .rozet-dini { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; }
-        .rozet-kandil { background: rgba(223, 177, 91, 0.2); color: var(--gold); }
 
         /* Alt Navigasyon */
         .bottom-nav {
@@ -796,10 +708,10 @@
                         <div class="zikir-msg" id="zikirMsg"></div>
                     </div>
                     <div class="hedef-chips">
-                        <div class="chip active" onclick="setHedef(33)">33</div>
-                        <div class="chip" onclick="setHedef(99)">99</div>
-                        <div class="chip" onclick="setHedef(500)">500</div>
-                        <div class="chip" onclick="setHedef(1000)">1000</div>
+                        <div class="chip active" onclick="setHedef(33, event)">33</div>
+                        <div class="chip" onclick="setHedef(99, event)">99</div>
+                        <div class="chip" onclick="setHedef(500, event)">500</div>
+                        <div class="chip" onclick="setHedef(1000, event)">1000</div>
                     </div>
                     <div class="zikir-btn-container">
                         <button class="zikir-main-btn" id="zikirMainBtn">ÇEK</button>
@@ -815,9 +727,9 @@
         <div id="section-kuran" class="page-section">
             <div class="card">
                 <div class="card-title">📖 Kur'an-ı Kerim Dinle & Oku</div>
-                <input type="text" class="search-box" id="kuranArama" placeholder="Sure veya cüz ara...">
+                <input type="text" class="search-box" id="kuranArama" placeholder="Sure ara..." oninput="kuranAra()">
                 <div id="kuranContainer">
-                    <div class="empty-state">Kur'an içerikleri yükleniyor...</div>
+                    <div class="empty-state">Yükleniyor...</div>
                 </div>
             </div>
         </div>
@@ -877,7 +789,7 @@
             <div class="card">
                 <div class="card-title">🌙 Dini Günler ve Kandiller</div>
                 <div class="bayram-hero">
-                    <span class="tur-rozet" id="en yakinrozet">Dini Gün</span>
+                    <span class="tur-rozet" id="enYakinRozet">Dini Gün</span>
                     <h2 id="enYakinAd">Kandil / Bayram</h2>
                     <div class="countdown" id="countdownBox">
                         <div class="cd-box"><b id="cdGun">0</b><span>Gün</span></div>
@@ -941,10 +853,10 @@
         const msgEl = document.getElementById('zikirMsg');
         const mainBtn = document.getElementById('zikirMainBtn');
 
-        function setHedef(val) {
+        function setHedef(val, evt) {
             hedefCount = val;
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            event.target.classList.add('active');
+            if(evt && evt.target) evt.target.classList.add('active');
             document.getElementById('hedefText').innerText = val;
             guncelleZikirUI();
         }
@@ -962,13 +874,15 @@
             }
         }
 
-        mainBtn.addEventListener('click', () => {
-            zikirCount++;
-            toplamZikir++;
-            countEl.classList.add('anim');
-            setTimeout(() => countEl.classList.remove('anim'), 100);
-            guncelleZikirUI();
-        });
+        if(mainBtn) {
+            mainBtn.addEventListener('click', () => {
+                zikirCount++;
+                toplamZikir++;
+                countEl.classList.add('anim');
+                setTimeout(() => countEl.classList.remove('anim'), 100);
+                guncelleZikirUI();
+            });
+        }
 
         function resetZikir(tamami) {
             zikirCount = 0;
@@ -976,25 +890,32 @@
             guncelleZikirUI();
         }
 
-        // Kur'an Listesi Güvenli Yükleyici (Yükleniyor sorunu giderildi)
-        function loadKuran() {
+        // Sabit Güvenli Sure Listesi
+        const sureler = [
+            { no: 1, ad: "Fatiha Suresi", ayet: 7, ses: "https://server8.mp3quran.net/afs/001.mp3" },
+            { no: 2, ad: "Bakara Suresi (Özet/Seçmeler)", ayet: 286, ses: "https://server8.mp3quran.net/afs/002.mp3" },
+            { no: 36, ad: "Yasin Suresi", ayet: 83, ses: "https://server8.mp3quran.net/afs/036.mp3" },
+            { no: 56, ad: "Vakıa Suresi", ayet: 96, ses: "https://server8.mp3quran.net/afs/056.mp3" },
+            { no: 67, ad: "Mülk Suresi", ayet: 30, ses: "https://server8.mp3quran.net/afs/067.mp3" },
+            { no: 78, ad: "Nebe Suresi", ayet: 40, ses: "https://server8.mp3quran.net/afs/078.mp3" },
+            { no: 112, ad: "İhlas Suresi", ayet: 4, ses: "https://server8.mp3quran.net/afs/112.mp3" },
+            { no: 113, ad: "Felak Suresi", ayet: 5, ses: "https://server8.mp3quran.net/afs/113.mp3" },
+            { no: 114, ad: "Nas Suresi", ayet: 6, ses: "https://server8.mp3quran.net/afs/114.mp3" }
+        ];
+
+        // Kur'an Listesi Güvenli Yükleyici
+        function loadKuran(filtrelenenListe) {
             const container = document.getElementById('kuranContainer');
-            
-            // Sabit güvenli sure listesi (API bağımlılığından ve takılmalardan kurtarır)
-            const sureler = [
-                { no: 1, ad: "Fatiha Suresi", ayet: 7, ses: "https://server8.mp3quran.net/afs/001.mp3" },
-                { no: 2, ad: "Bakara Suresi (Özet/Seçmeler)", ayet: 286, ses: "https://server8.mp3quran.net/afs/002.mp3" },
-                { no: 36, ad: "Yasin Suresi", ayet: 83, ses: "https://server8.mp3quran.net/afs/036.mp3" },
-                { no: 56, ad: "Vakıa Suresi", ayet: 96, ses: "https://server8.mp3quran.net/afs/056.mp3" },
-                { no: 67, ad: "Mülk Suresi", ayet: 30, ses: "https://server8.mp3quran.net/afs/067.mp3" },
-                { no: 78, ad: "Nebe Suresi", ayet: 40, ses: "https://server8.mp3quran.net/afs/078.mp3" },
-                { no: 112, ad: "İhlas Suresi", ayet: 4, ses: "https://server8.mp3quran.net/afs/112.mp3" },
-                { no: 113, ad: "Felak Suresi", ayet: 5, ses: "https://server8.mp3quran.net/afs/113.mp3" },
-                { no: 114, ad: "Nas Suresi", ayet: 6, ses: "https://server8.mp3quran.net/afs/114.mp3" }
-            ];
+            if(!container) return;
+
+            const liste = filtrelenenListe || sureler;
+            if(liste.length === 0) {
+                container.innerHTML = '<div class="empty-state">Aradığınız kriterlere uygun sure bulunamadı.</div>';
+                return;
+            }
 
             let html = '';
-            sureler.forEach(s => {
+            liste.forEach(s => {
                 html += `
                     <div class="kuran-item">
                         <div class="kuran-title">${s.no}. ${s.ad} (${s.ayet} Ayet)</div>
@@ -1008,10 +929,20 @@
             container.innerHTML = html;
         }
 
+        // Arama Fonksiyonu
+        function kuranAra() {
+            const aranan = document.getElementById('kuranArama').value.toLowerCase().trim();
+            const sonuc = sureler.filter(s => s.ad.toLowerCase().includes(aranan) || s.no.toString().includes(aranan));
+            loadKuran(sonuc);
+        }
+
         // Başlangıç İşlemleri
         window.addEventListener('DOMContentLoaded', () => {
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('headerDate').innerText = new Date().toLocaleDateString('tr-TR', options);
+            const dateEl = document.getElementById('headerDate');
+            if(dateEl) {
+                dateEl.innerText = new Date().toLocaleDateString('tr-TR', options);
+            }
             loadKuran();
         });
     </script>
