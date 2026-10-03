@@ -4,14 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="description" content="Namaz vakitleri, zikirmatik, kıble pusulası, dualar, Esmaül Hüsna, Kur'an dinletisi ve dini günler takvimi.">
+    <meta name="description" content="Namaz vakitleri, zikirmatik, kıble pusulası, dualar, Esmaül Hüsna, Kur'an okuma ve dini günler takvimi.">
     <title>İslam Dünyası - Zikir, Dua, Kıble & İbadet</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%95%8C%3C/text%3E%3C/svg%3E">
     <!-- Leaflet.js Harita CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Kur'an Modülü Ek Stilleri */
+        .quran-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .ayah-item { padding: 12px 0; border-bottom: 1px solid var(--border-color, #333); }
+        .ayah-item:last-child { border-bottom: none; }
+        .arabic-text { font-size: 1.5rem; text-align: right; direction: rtl; font-family: 'Amiri', 'Traditional Arabic', serif; margin-bottom: 8px; color: var(--gold, #d4af37); line-height: 2.2; }
+        .translation-text { font-size: 0.95rem; line-height: 1.5; margin-bottom: 8px; }
+        .ayah-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #a0a0a0; }
+        .btn-audio { background: #1a4d2e; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .btn-page { background: #1a4d2e; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+        .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+    </style>
 </head>
 <body>
 
@@ -233,18 +247,35 @@
             </div>
         </div>
 
-        <!-- SAYFA 5: KUR'AN DİNLETİSİ -->
+        <!-- SAYFA 5: KUR'ÂN-I KERİM (SAYFA SAYFA / CÜZ CÜZ OKUMA & ARAMA) -->
         <div id="page-kuran" class="page-section">
             <div class="card">
-                <div class="card-title">🎧 Ödüllü Hafızlardan Kur'an & Dua (23 Eser)</div>
-                <select id="hafiz-secim" class="search-box" onchange="kuranListesiniGuncelle()">
-                    <option value="alafasy">Mishary Rashid Alafasy</option>
-                    <option value="abdulbasit">Abdulbasit Abdussamed</option>
-                    <option value="almuaiqly">Maher Al-Muaiqly</option>
-                    <option value="dosari">Yasser Al-Dosari</option>
-                    <option value="shuraim">Saud Al-Shuraim</option>
-                </select>
-                <div id="kuran-ses-listesi"></div>
+                <div class="card-title">📖 Kur'ân-ı Kerim & Diyanet Meali</div>
+                
+                <div style="margin-bottom: 12px;">
+                    <input type="text" id="searchInput" class="search-box" placeholder="Sure adı, ayet no veya anahtar kelime (örn: sabır, namaz, tevbe)..." oninput="handleSearch(this.value)">
+                </div>
+
+                <div class="quran-controls">
+                    <select id="surahSelect" class="search-box" onchange="changeSurah(this.value)">
+                        <option value="">Sure Seçin</option>
+                    </select>
+                    <select id="reciterSelect" class="search-box">
+                        <option value="ar.alafasy">Mishary Alafasy</option>
+                        <option value="ar.abdulbasit">Abdulbasit Abdussamed</option>
+                        <option value="ar.muaiqly">Maher Al-Muaiqly</option>
+                    </select>
+                </div>
+
+                <div id="quranContainer">
+                    <div style="text-align:center; padding:20px;">Kur'ân yükleniyor...</div>
+                </div>
+
+                <div class="pagination">
+                    <button class="btn-page" onclick="prevPage()">Önceki Sayfa</button>
+                    <span id="pageInfo" style="font-size: 0.9rem; font-weight: bold; color: var(--gold);">Sayfa 1 / 604</span>
+                    <button class="btn-page" onclick="nextPage()">Sonraki Sayfa</button>
+                </div>
             </div>
         </div>
 
@@ -367,7 +398,7 @@
             <div>Kıble</div>
         </div>
         <div class="nav-item" data-page="kuran" role="button" tabindex="0" onclick="sayfaDegistir('kuran', this)">
-            <div class="nav-icon">🎧</div>
+            <div class="nav-icon">📖</div>
             <div>Kur'an</div>
         </div>
         <div class="nav-item" data-page="bayramlar" role="button" tabindex="0" onclick="sayfaDegistir('bayramlar', this)">
@@ -385,7 +416,14 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script src="app.js"></script>
+    <script>
+        // Çevrimdışı çalışma ve Kur'ân modülünü tetikleme
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('sw.js').catch(function () {});
+            });
+        }
+    </script>
 </body>
 </html>
