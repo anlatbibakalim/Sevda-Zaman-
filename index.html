@@ -2,308 +2,1445 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sevda Zamanı - Zikirmatik & İslami Rehber</title>
-    
-    <!-- PWA Manifest & Service Worker Registration -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#064e3b">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Sevda Zamanı">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2833/2833315.png">
-    
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('Service Worker Kaydedildi:', reg))
-            .catch(err => console.log('Service Worker Hatası:', err));
-        });
-      }
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profesyonel Zikirmatik & İslami Rehber</title>
 
-    <!-- FontAwesome & Leaflet CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS (Harita İçin) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+
     <style>
         :root {
             --bg-color: #090a0f;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-border: rgba(255, 255, 255, 0.1);
-            --primary: #10b981;
-            --primary-gold: #fbbf24;
+            --card-bg: #12161f;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-green: #10b981;
+            --accent-green-dark: #059669;
+            --gold-color: #f59e0b;
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
+            --nav-bg: #111827;
         }
 
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.15) 0%, transparent 70%),
-                radial-gradient(circle at 80% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%);
         }
 
         .container {
             width: 100%;
             max-width: 480px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            padding-bottom: 90px;
+            padding: 15px;
         }
 
-        header {
-            text-align: center;
-            padding: 10px 0;
-        }
-
-        header h1 {
-            font-size: 1.5rem;
-            color: var(--primary-gold);
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        header p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .tab-content {
+        .page-section {
             display: none;
+            width: 100%;
+        }
+        .page-section.active {
+            display: block;
         }
 
-        .tab-content.active {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        /* Card Styles */
         .card {
             background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--card-border);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 18px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
-        /* Zikirmatik Styling */
-        .zikir-card {
+        .timer-box {
+            background: linear-gradient(135deg, #064e3b, #047857);
+            color: #ffffff;
             text-align: center;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 20px rgba(4, 120, 87, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .timer-title { font-size: 13px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
+        .timer-clock { font-size: 36px; font-weight: 800; margin-top: 6px; font-family: monospace; letter-spacing: 2px; }
+
+        h2 { font-size: 18px; margin-top: 0; color: var(--accent-green); display: flex; justify-content: space-between; align-items: center; }
+        select, input {
+            width: 100%; padding: 14px; font-size: 15px; border-radius: 12px;
+            border: 1px solid var(--card-border); background: #1f2937; color: #fff;
+            margin-top: 8px; outline: none; transition: border-color 0.2s;
+        }
+        select:focus, input:focus { border-color: var(--accent-green); }
+
+        .counter-box { text-align: center; padding: 15px 0; user-select: none; }
+        .counter-display {
+            font-size: 60px; font-weight: 900; color: var(--accent-green);
+            margin: 10px 0; font-family: monospace; text-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+        .progress-bar-bg {
+            background: #1f2937; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 20px;
+        }
+        .progress-bar-fill {
+            background: var(--accent-green); height: 100%; width: 0%; transition: width 0.2s ease-out;
+        }
+
+        .btn-tap {
+            width: 100%; height: 130px; font-size: 24px; font-weight: 800;
+            background: linear-gradient(180deg, #10b981, #047857); color: white;
+            border: none; border-radius: 20px; cursor: pointer;
+            box-shadow: 0 8px 0 #064e3b, 0 12px 20px rgba(0,0,0,0.6);
+            transition: all 0.1s; letter-spacing: 1px;
+        }
+        .btn-tap:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #064e3b, 0 4px 10px rgba(0,0,0,0.6);
+        }
+        .btn-reset {
+            padding: 8px 14px; font-size: 12px; border-radius: 8px; border: none;
+            background: #ef4444; color: white; cursor: pointer; font-weight: bold;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #d97706, #f59e0b); color: #000;
+            font-weight: 800; width: 100%; padding: 14px; border-radius: 12px;
+            border: none; cursor: pointer; margin-top: 12px; font-size: 15px;
+        }
+
+        /* PUSULA VE HARİTA STİLLERİ */
+        .compass-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            padding: 15px 0;
         }
-
-        .counter-display {
-            font-size: 4rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin: 15px 0;
-            font-variant-numeric: tabular-nums;
-            text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-        }
-
-        .zikir-btn {
-            width: 120px;
-            height: 120px;
+        .compass-circle {
+            position: relative;
+            width: 220px;
+            height: 220px;
             border-radius: 50%;
-            border: 2px solid var(--primary);
-            background: radial-gradient(circle, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.05) 100%);
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
+            background: radial-gradient(circle, #1f2937 0%, #111827 100%);
+            border: 6px solid var(--card-border);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
-            transition: transform 0.1s;
+            transition: transform 0.1s ease-out;
         }
-
-        .zikir-btn:active {
-            transform: scale(0.92);
+        .compass-marker {
+            position: absolute;
+            font-weight: bold;
+            font-size: 14px;
         }
+        .compass-n { top: 8px; color: #ef4444; }
+        .compass-s { bottom: 8px; color: var(--text-muted); }
+        .compass-e { right: 12px; color: var(--text-muted); }
+        .compass-w { left: 12px; color: var(--text-muted); }
 
-        .controls {
+        .qibla-pointer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+            transition: transform 0.2s ease;
+        }
+        .kaaba-icon {
+            font-size: 26px;
+            filter: drop-shadow(0 0 8px var(--gold-color));
         }
 
-        .btn-sm {
-            padding: 8px 16px;
-            border-radius: 8px;
+        #map {
+            width: 100%;
+            height: 280px;
+            border-radius: 12px;
+            margin-top: 10px;
             border: 1px solid var(--card-border);
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-main);
-            cursor: pointer;
-            font-size: 0.85rem;
+            z-index: 1;
         }
 
-        /* Navigation Bar */
-        .nav-bar {
+        .arabic-text {
+            font-family: 'Traditional Arabic', 'Scheherazade New', 'Amiri', serif;
+            font-size: 22px;
+            direction: rtl;
+            text-align: right;
+            color: #f3f4f6;
+            line-height: 1.8;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border-right: 3px solid var(--accent-green);
+        }
+
+        .meaning { font-size: 13px; color: var(--text-muted); font-style: italic; margin-top: 6px; line-height: 1.4; }
+        .list-item { border-bottom: 1px solid var(--card-border); padding: 14px 0; display: flex; flex-direction: column; }
+        .list-item:last-child { border-bottom: none; }
+        .item-header { display: flex; justify-content: space-between; align-items: center; }
+        .item-no { font-size: 12px; font-weight: bold; color: var(--gold-color); background: #1f2937; padding: 2px 8px; border-radius: 6px; }
+        .item-title { font-weight: 700; color: var(--accent-green); font-size: 16px; }
+        .mesnevi-box {
+            font-style: italic; font-size: 16px; color: var(--gold-color);
+            line-height: 1.6; padding: 16px; background: #1f2937;
+            border-left: 4px solid var(--gold-color); border-radius: 8px; margin-top: 12px;
+        }
+
+        .bottom-nav {
             position: fixed;
             bottom: 0;
-            width: 100%;
-            max-width: 480px;
-            background: rgba(9, 10, 15, 0.95);
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--nav-bg);
             border-top: 1px solid var(--card-border);
-            backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-around;
-            padding: 10px 0;
+            align-items: center;
             z-index: 1000;
+            max-width: 480px;
+            margin: 0 auto;
         }
-
         .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
             color: var(--text-muted);
-            font-size: 0.75rem;
+            font-size: 10px;
+            font-weight: 600;
             cursor: pointer;
-            border: none;
-            background: none;
+            width: 20%;
+            height: 100%;
+            transition: color 0.2s;
         }
-
-        .nav-item.active {
-            color: var(--primary-gold);
-        }
-
-        .nav-item i {
-            font-size: 1.2rem;
-        }
-
-        /* Map Container */
-        #map {
-            height: 300px;
-            width: 100%;
-            border-radius: 12px;
-            margin-top: 10px;
-        }
+        .nav-item .icon { font-size: 18px; margin-bottom: 3px; }
+        .nav-item.active { color: var(--accent-green); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fa-solid =>-kaaba"></i> Sevda Zamanı</h1>
-            <p>Zikirmatik & İslami Rehber</p>
-        </header>
 
-        <!-- Zikirmatik Tab -->
-        <div id="tab-zikir" class="tab-content active">
-            <div class="card zikir-card">
-                <p style="color: var(--primary-gold);">Sübhanallah</p>
-                <div class="counter-display" id="counter">0</div>
-                <button class="zikir-btn" onclick="incrementCounter()">
-                    <i class="fa-solid fa-fingerprint"></i>
-                </button>
-                <div class="controls">
-                    <button class="btn-sm" onclick="resetCounter()"><i class="fa-solid fa-rotate-right"></i> Sıfırla</button>
+<div class="container">
+
+    <div class="timer-box">
+        <div class="timer-title" id="vakit-baslik">Kalan Süre Hesaplanıyor...</div>
+        <div class="timer-clock" id="vakit-saat">00:00:00</div>
+    </div>
+
+    <!-- 1. ZİKİRMATİK SAYFASI -->
+    <div id="page-zikir" class="page-section active">
+        <div class="card">
+            <h2>
+                Zikirmatik
+                <button class="btn-reset" onclick="sifirla()">Sıfırla</button>
+            </h2>
+
+            <select id="zikir-secim" onchange="zikirDegistir()">
+                <option value="0">Sübhânallah (33)</option>
+                <option value="1">Elhamdülillâh (33)</option>
+                <option value="2">Allâhu Ekber (33)</option>
+                <option value="3">Lâ ilâhe illallâh (100)</option>
+                <option value="4">Astağfirullâh (100)</option>
+                <option value="5">Sübhânallahi ve bihamdihi (100)</option>
+                <option value="6">Lâ havle ve lâ kuvvete illâ billâh (100)</option>
+                <option value="7">Ya Allah (100)</option>
+                <option value="8">Ya Rahman (100)</option>
+                <option value="9">Ya Rahim (100)</option>
+            </select>
+
+            <div class="meaning" id="zikir-anlam">--</div>
+
+            <div class="counter-box">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="ilerleme-cubugu"></div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Kıble Bulucu Tab -->
-        <div id="tab-kible" class="tab-content">
-            <div class="card">
-                <h3><i class="fa-solid fa-compass"></i> Kıble Yönü</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Konumunuza göre Kabe yönünü görebilirsiniz.</p>
-                <div id="map"></div>
-            </div>
-        </div>
-
-        <!-- Dualar Tab -->
-        <div id="tab-dualar" class="tab-content">
-            <div class="card">
-                <h3 style="color: var(--primary-gold);">Günün Duası</h3>
-                <p style="margin-top: 10px; line-height: 1.5; font-size: 0.95rem;">"Rabbimiz! Bize dünyada da iyilik ver, ahirette de iyilik ver ve bizi ateş azabından koru." (Bakara, 201)</p>
+                <div class="counter-display" id="sayac">0 / 33</div>
+                <button class="btn-tap" onclick="artir()">ZİKİR ÇEK (+1)</button>
             </div>
         </div>
     </div>
 
-    <!-- Alt Menü -->
-    <nav class="nav-bar">
-        <button class="nav-item active" onclick="switchTab('tab-zikir', this)">
-            <i class="fa-solid fa-hand-pointer"></i>
-            Zikirmatik
-        </button>
-        <button class="nav-item" onclick="switchTab('tab-kible', this)">
-            <i class="fa-solid fa-compass"></i>
-            Kıble
-        </button>
-        <button class="nav-item" onclick="switchTab('tab-dualar', this)">
-            <i class="fa-solid fa-book-quran"></i>
-            Dualar
-        </button>
-    </nav>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        let count = 0;
-        function incrementCounter() {
-            count++;
-            document.getElementById('counter').innerText = count;
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
-        }
-
-        function resetCounter() {
-            count = 0;
-            document.getElementById('counter').innerText = count;
-        }
-
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    <!-- 2. KIBLE PUSULASI VE HARİTA SAYFASI -->
+    <div id="page-pusula" class="page-section">
+        <div class="card" style="text-align: center;">
+            <h2>Kıble Pusulası</h2>
+            <p class="meaning">Cihazı düz tutarak pusulayı veya canlı haritayı kullanabilirsiniz.</p>
             
-            document.getElementById(tabId).classList.add('active');
-            element.classList.add('active');
+            <div class="compass-wrapper">
+                <div class="compass-circle" id="pusula-disk">
+                    <span class="compass-marker compass-n">N</span>
+                    <span class="compass-marker compass-e">E</span>
+                    <span class="compass-marker compass-s">S</span>
+                    <span class="compass-marker compass-w">W</span>
+                    <div class="qibla-pointer" id="kible-isaret">
+                        <span class="kaaba-icon" title="Kıble Yönü">🕋</span>
+                    </div>
+                </div>
+            </div>
 
-            if (tabId === 'tab-kible' && !window.mapInitialized) {
-                initMap();
+            <div style="font-size: 14px; margin-bottom: 10px;" id="pusula-durum">
+                Mekke Açısı: <b id="kible-acisi-txt" style="color:var(--gold-color);">Hesaplanıyor...</b>
+            </div>
+            <button class="btn-gold" onclick="pusulaBaslat()">Pusulayı Etkinleştir 🧭</button>
+        </div>
+
+        <div class="card">
+            <h2>Haritada Canlı Kıble Çizgisi</h2>
+            <div class="meaning">Konumunuzdan Mekke'ye olan direkt hat haritada gösterilmektedir.</div>
+            <div id="map"></div>
+            <button class="btn-gold" style="margin-top:10px;" onclick="konumuBulVeHaritayaIsle()">Konumumu Haritada Güncelle 📍</button>
+        </div>
+    </div>
+
+    <!-- 3. ESMAÜL HÜSNA SAYFASI -->
+    <div id="page-esma" class="page-section">
+        <div class="card">
+            <h2>Esmaül Hüsna (99 İsim)</h2>
+            <input type="text" id="esma-ara" placeholder="İsim veya Anlam Ara..." onkeyup="esmaFiltrele()">
+            <div id="esma-listesi" style="margin-top: 15px; max-height: 500px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- 4. MESNEVİ SAYFASI -->
+    <div id="page-mesnevi" class="page-section">
+        <div class="card">
+            <h2 style="color: var(--gold-color);">Mesnevi'den Hikmetler</h2>
+            <div class="mesnevi-box" id="mesnevi-soz">Yükleniyor...</div>
+            <button class="btn-gold" onclick="rastgeleMesneviSozu()">Yeni Hikmet Getir 🎲</button>
+        </div>
+    </div>
+
+    <!-- 5. DUALAR VE ŞEHİR SAYFASI -->
+    <div id="page-dualar" class="page-section">
+        <div class="card">
+            <h2>Şehir Ayarı</h2>
+            <select id="sehir-secim" onchange="sehirDegistir()">
+                <option value="Ankara">Ankara</option>
+                <option value="Istanbul">İstanbul</option>
+                <option value="Izmir">İzmir</option>
+                <option value="Bursa">Bursa</option>
+                <option value="Antalya">Antalya</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <h2>Namaz Duaları ve Sureler</h2>
+            <select id="vakit-duasi-secim" onchange="dualarıGoster()">
+                <option value="Sabah">Sabah Namazı Duaları (3)</option>
+                <option value="Öğle">Öğle Namazı Duaları (3)</option>
+                <option value="İkindi">İkindi Namazı Duaları (3)</option>
+                <option value="Akşam">Akşam Namazı Duaları (3)</option>
+                <option value="Yatsı">Yatsı Namazı Duaları (3)</option>
+            </select>
+            <div id="dua-listesi" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="sayfaDegistir('zikir', this)">
+        <span class="icon">📿</span>
+        <span>Zikirmatik</span>
+    </div>
+    <div class="nav-item" onclick="sayfaDegistir('pusula', this)">
+        <span class="icon">🧭</span>
+        <span>Kıble</span>
+    </div>
+    <div class="nav-item" onclick="sayfaDegistir('esma', this)">
+        <span class="icon">🌟</span>
+        <span>Esmaül Hüsna</span>
+    </div>
+    <div class="nav-item" onclick="sayfaDegistir('mesnevi', this)">
+        <span class="icon">📜</span>
+        <span>Mesnevi</span>
+    </div>
+    <div class="nav-item" onclick="sayfaDegistir('dualar', this)">
+        <span class="icon">🤲</span>
+        <span>Dualar</span>
+    </div>
+</div>
+
+<!-- Leaflet JS (Harita İçin) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    const zikirler = [
+        { isim: "Sübhânallah", hedef: 33, anlam: "Allah noksan sıfatlardan uzaktır." },
+        { isim: "Elhamdülillâh", hedef: 33, anlam: "Hamd Allah'a mahsustur." },
+        { isim: "Allâhu Ekber", hedef: 33, anlam: "Allah en büyüktür." },
+        { isim: "Lâ ilâhe illallâh", hedef: 100, anlam: "Allah'tan başka ilah yoktur." },
+        { isim: "Astağfirullâh", hedef: 100, anlam: "Allah'tan bağışlanma dilerim." },
+        { isim: "Sübhânallahi ve bihamdihi", hedef: 100, anlam: "Allah'ı hamd ile tesbih ederim." },
+        { isim: "Lâ havle ve lâ kuvvete illâ billâh", hedef: 100, anlam: "Güç ve kuvvet ancak Allah'ındır." },
+        { isim: "Ya Allah", hedef: 100, anlam: "Her şeyin tek yaratıcısı." },
+        { isim: "Ya Rahman", hedef: 100, anlam: "Dünyada tüm mahlukata merhamet eden." },
+        { isim: "Ya Rahim", hedef: 100, anlam: "Ahirette sadece müminlere merhamet eden." }
+    ];
+
+    const esmaListesi = [
+        { no: 1, isim: "Allah", anlam: "Eşi benzeri olmayan, bütün noksanlıklardan münezzeh, tek ilah." },
+        { no: 2, isim: "Er-Rahmân", anlam: "Dünyada bütün mahlukata merhamet eden, şefkat gösteren." },
+        { no: 3, isim: "Er-Rahîm", anlam: "Ahirette sadece müminlere merhamet ve ihsan eden." },
+        { no: 4, isim: "El-Melik", anlam: "Bütün kainatın, mülkün tek sahibi ve mutlak hükümdarı." },
+        { no: 5, isim: "El-Kuddûs", anlam: "Her türlü ayıptan, kusurdan ve noksanlıktan uzak, pek temiz." },
+        { no: 6, isim: "Es-Selâm", anlam: "Kullarını tehlikelerden selamete çıkaran, esenlik veren." },
+        { no: 7, isim: "El-Mü'min", anlam: "Gönüllere iman veren, sığınanları emniyete kavuşturan." },
+        { no: 8, isim: "El-Müheymin", anlam: "Her şeyi gözeten, koruyan ve denetim altında tutan." },
+        { no: 9, isim: "El-Azîz", anlam: "Mutlak güç sahibi, yenilmesi imkansız olan galip." },
+        { no: 10, isim: "El-Cebbâr", anlam: "Dilediğini zorla yaptıran, kırılanları onaran, eksikleri tamamlayan." },
+        { no: 11, isim: "El-Mütekebbiri", anlam: "Büyüklükte eşi ve benzeri olmayan, azamet sahibi." },
+        { no: 12, isim: "El-Hâlık", anlam: "Her şeyi yoktan var eden, yaratan." },
+        { no: 13, isim: "El-Bâri", anlam: "Her şeyi kusursuz, oranlı ve birbiriyle uyumlu yaratan." },
+        { no: 14, isim: "El-Musavvir", anlam: "Yaratıklarına dilediği şekli ve sureti veren." },
+        { no: 15, isim: "El-Gaffâr", anlam: "Kullarının günahlarını örten, bağışlaması çok bol olan." },
+        { no: 16, isim: "El-Kahhâr", anlam: "Her şeye galip gelen, mutlak hakimiyetiyle ezen." },
+        { no: 17, isim: "El-Vehhâb", anlam: "Karşılıksız, hibe olarak bolca nimet bağışlayan." },
+        { no: 18, isim: "Er-Razzâk", anlam: "Bütün canlıların rızkını veren ve ihtiyacını karşılayan." },
+        { no: 19, isim: "El-Fettâh", anlam: "Her türlü kapıyı ve zorluğu açan, darlıkları ferahlatan." },
+        { no: 20, isim: "El-Alîm", anlam: "Gizli ve açık her şeyi en ince ayrıntısına kadar bilen." },
+        { no: 21, isim: "El-Kâbıd", anlam: "Dilediğine rızkı daraltan, ruhları kabzeden." },
+        { no: 22, isim: "El-Bâsit", anlam: "Dilediğine rızkı genişleten, ruhları ferahlatan." },
+        { no: 23, isim: "El-Hâfıd", anlam: "Dereceleri alçaltan, kafirleri rezil ve rüsvay eden." },
+        { no: 24, isim: "Er-Râfi", anlam: "Şeref ve dereceleri yükselten, müminleri yücelten." },
+        { no: 25, isim: "El-Mu'ız", anlam: "Dilediğine izzet ve şeref veren, onu aziz kılan." },
+        { no: 26, isim: "El-Müzil", anlam: "Dilediğini zillete düşüren, hor ve hakir kılan." },
+        { no: 27, isim: "Es-Semî", anlam: "Her şeyi en iyi işiten, duaları kabul eden." },
+        { no: 28, isim: "El-Basîr", anlam: "Gizli açık her şeyi en küçük ayrıntısına kadar gören." },
+        { no: 29, isim: "El-Hakem", anlam: "Mutlak hakim, hakkı batıldan ayıran ve hüküm veren." },
+        { no: 30, isim: "El-Adl", anlam: "Mutlak adalet sahibi, hiçbir mahlukuna zulmetmeyen." },
+        { no: 31, isim: "El-Latîf", anlam: "Kullarına lütfeden, en ince işlerin detayını bilen." },
+        { no: 32, isim: "El-Habîr", anlam: "Her şeyin gizli ve iç yüzünden haberdar olan." },
+        { no: 33, isim: "El-Halîm", anlam: "Cezalandırmada acele etmeyen, yumuşaklık sahibi." },
+        { no: 34, isim: "El-Azîm", anlam: "Büyüklüğünün ve azametinin sınırı olmayan." },
+        { no: 35, isim: "El-Gafûr", anlam: "Mağfireti ve af dileyenleri bağışlaması çok bol olan." },
+        { no: 36, isim: "Eş-Şekûr", anlam: "Kendi rızası için yapılan şükür ve amelleri bolca ödüllendiren." },
+        { no: 37, isim: "El-Aliyy", anlam: "Yücelikte üstüne olmayan, şanı pek yüce." },
+        { no: 38, isim: "El-Kebîr", anlam: "Büyüklükte eşi benzeri bulunmayan, pek büyük." },
+        { no: 39, isim: "El-Hafîz", anlam: "Her şeyi koruyup gözeten, koruyucu." },
+        { no: 40, isim: "El-Mukît", anlam: "Bütün canlıların gıdasını ve azığını veren." },
+        { no: 41, isim: "El-Hasîb", anlam: "Herkesin hesabını en iyi gören, kullarına yeten." },
+        { no: 42, isim: "El-Celîl", anlam: "Azamet ve celal sahibi, yüceler yücesi." },
+        { no: 43, isim: "El-Kerîm", anlam: "İkramı ve cömertliği sonsuz olan, bolca veren." },
+        { no: 44, isim: "Er-Rakîb", anlam: "Her varlığı ve ameli anbean kontrol edip gözeten." },
+        { no: 45, isim: "El-Mücîb", anlam: "Duaları, niyazları kabul edip karşılık veren." },
+        { no: 46, isim: "El-Vâsi", anlam: "İlmi, rahmeti ve merhameti her şeyi kuşatan." },
+        { no: 47, isim: "El-Hakîm", anlam: "Her emri ve işi hikmetli olan, nedensiz iş yapmayan." },
+        { no: 48, isim: "El-Vedûd", anlam: "Kullarını çok seven ve sevilmeye en layık olan." },
+        { no: 49, isim: "El-Mecîd", anlam: "Şanı, şerefi ve övgüsü pek yüce olan." },
+        { no: 50, isim: "El-Bâis", anlam: "Ölüleri diriltip kabirlerinden çıkaran, peygamber gönderen." },
+        { no: 51, isim: "Eş-Şehîd", anlam: "Her zaman ve her yerde hazır, her şeye şahit olan." },
+        { no: 52, isim: "El-Hakk", anlam: "Varlığı hiç değişmeden duran, varlığı mutlak gerçek olan." },
+        { no: 53, isim: "El-Vekîl", anlam: "Kendisine tevekkül edenlerin işlerini en iyi şekilde halleden." },
+        { no: 54, isim: "El-Kaviyy", anlam: "Sonsuz kudret ve kuvvet sahibi." },
+        { no: 55, isim: "El-Metîn", anlam: "Çok sağlam, sarsılmaz güç sahibi." },
+        { no: 56, isim: "El-Veliyy", anlam: "Müminlerin dostu ve yardımcısı." },
+        { no: 57, isim: "El-Hamîd", anlam: "Her türlü övgüye layık olan." },
+        { no: 58, isim: "El-Muhsî", anlam: "Yaratılmış her şeyin sayısını teker teker bilen." },
+        { no: 59, isim: "El-Mübdi", anlam: "Maddesiz ve örneksiz olarak ilk defa yaratan." },
+        { no: 60, isim: "El-Muîd", anlam: "Yaratılmışları yok ettikten sonra tekrar dirilten." },
+        { no: 61, isim: "El-Muhyî", anlam: "Can veren, hayat bağışlayan." },
+        { no: 62, isim: "El-Mümît", anlam: "Canlıların hayatına son veren, öldüren." },
+        { no: 63, isim: "El-Hayy", anlam: "Daima diri, hayatı ezeli ve ebedi olan." },
+        { no: 64, isim: "El-Kayyûm", anlam: "Gökleri ve yeri tutan, her şeyi ayakta tutan." },
+        { no: 65, isim: "El-Vâcid", anlam: "Aradığı ve dilediği her şeyi anında bulan." },
+        { no: 66, isim: "El-Mâcid", anlam: "Cömertliği ve şanı büyüklükte eşsiz olan." },
+        { no: 67, isim: "El-Vâhid", anlam: "Zatında, sıfatlarında ve fiillerinde tek olan." },
+        { no: 68, isim: "Es-Samed", anlam: "Hiçbir şeye ihtiyacı olmayan, herkesin kendisine muhtaç olduğu." },
+        { no: 69, isim: "El-Kâdir", anlam: "İstediğini istediği gibi yapmaya gücü yeten." },
+        { no: 70, isim: "El-Muktedir", anlam: "Kudret sahibi, kuvvetiyle her şeyi yöneten." },
+        { no: 71, isim: "El-Mukaddim", anlam: "Dilediğini öne alan, ileri geçiren." },
+        { no: 72, isim: "El-Muahhir", anlam: "Dilediğini geride bırakan, erteleyen." },
+        { no: 73, isim: "El-Evvel", anlam: "Başlangıcı olmayan, ezeli olan." },
+        { no: 74, isim: "El-Âhir", anlam: "Sonu olmayan, ebedi olan." },
+        { no: 75, isim: "Ez-Zâhir", anlam: "Varlığı açık, eserleriyle aşikar olan." },
+        { no: 76, isim: "El-Bâtın", anlam: "Gizli olan, akılların kavrayamayacağı mahiyette olan." },
+        { no: 77, isim: "El-Vâli", anlam: "Bütün kainatı tek başına yöneten idareci." },
+        { no: 78, isim: "El-Müteâli", anlam: "Aklın alabileceği her şeyden yüce ve üstün olan." },
+        { no: 79, isim: "El-Berr", anlam: "İyiliği ve ihsanı bol olan, iyilik sever." },
+        { no: 80, isim: "Et-Tevvâb", anlam: "Tövbeleri kabul edip günahları bağışlayan." },
+        { no: 81, isim: "El-Müntakim", anlam: "Suçluları adaletiyle cezalandırıp intikam alan." },
+        { no: 82, isim: "El-Afüvv", anlam: "Çok affeden, günahları hiç yokmuş gibi silen." },
+        { no: 83, isim: "Er-Raûf", anlam: "Çok şefkatli, kullarına acıyan." },
+        { no: 84, isim: "Mâlik-ül Mülk", anlam: "Mülkün ebedi sahibi." },
+        { no: 85, isim: "Zül-Celâli vel İkrâm", anlam: "Büyüklük, azamet ve ikram sahibi." },
+        { no: 86, isim: "El-Muksit", anlam: "Adaletle hükmeden, mazlumun hakkını alan." },
+        { no: 87, isim: "El-Câmi", anlam: "İstediğini istediği zaman ve yerde toplayan." },
+        { no: 88, isim: "El-Ganiyy", anlam: "Çok zengin, hiçbir şeye muhtaç olmayan." },
+        { no: 89, isim: "El-Muğnî", anlam: "Dilediğini zengin kılan, ihtiyacını gideren." },
+        { no: 90, isim: "El-Mâni", anlam: "Dilediği şeyin gerçekleşmesine engel olan." },
+        { no: 91, isim: "Ed-Dârr", anlam: "Elem ve zarar verecek şeyleri yaratan." },
+        { no: 92, isim: "En-Nâfi", anlam: "Fayda ve yarar sağlayacak şeyleri yaratan." },
+        { no: 93, isim: "En-Nûr", anlam: "Alemleri aydınlatan, nurlar saçan." },
+        { no: 94, isim: "El-Hâdî", anlam: "Hidayet veren, doğru yolu gösteren." },
+        { no: 95, isim: "El-Bedî", anlam: "Örneksiz, emsalsiz harikalar yaratan." },
+        { no: 96, isim: "El-Bâkı", anlam: "Varlığının sonu olmayan, ebedi kalan." },
+        { no: 97, isim: "El-Vâris", anlam: "Bütün mülkün gerçek ve ebedi varisi." },
+        { no: 98, isim: "Er-Reşîd", anlam: "Bütün işleri isabetli olan, doğru yolu gösteren." },
+        { no: 99, isim: "Es-Sabûr", anlam: "Çok sabırlı olan, cezalandırmada acele etmeyen." }
+    ];
+
+    const namazDualari = {
+        "Sabah": [
+            { 
+                isim: "Ayet-el Kürsi", 
+                arapca: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ",
+                okunus: "Allâhu lâ ilâhe illâ huvel hayyul kayyûm, lâ te'huzuhû sinetuv velâ nevm, lehû mâ fis semâvâti vemâ fil ard, men zellezî yeşfe'u indehû illâ bi iznih, ya'lemu mâ beyne eydîhim vemâ halfehum, velâ yuhîtûne bişey'im min ilmihî illâ bimâ şâ', vesia kursiyyuhus semâvâti vel ard, velâ yeûduhû hıfzuhumâ, ve huvel aliyyul azîm.", 
+                anlam: "Allah, O'ndan başka ilah yoktur. O diridir, kayyumdur. O'nu ne bir uyuklama tutar ne de uyku. Göklerde ve yerde ne varsa hepsi O'nundur. O'nun izni olmadan katında kim şefaat edebilir? O, kullarının önlerindekini ve arkalarındakini bilir. İnsanlar ise O'nun dilediği kadarından başka ilminden hiçbir şeyi kavrayamazlar. O'nun kürsüsü gökleri ve yeri kaplamıştır. Onları koruyup gözetmek O'na ağır gelmez. O çok yücedir, çok büyüktür." 
+            },
+            { 
+                isim: "İhlas Suresi", 
+                arapca: "قُلْ هُوَ اللَّهُ أَحَدٌ ﴿١﴾ اللَّهُ الصَّمَدُ ﴿٢﴾ لَمْ يَلِدْ وَلَمْ يُولَدْ ﴿٣﴾ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ ﴿٤﴾",
+                okunus: "Kul huvallâhu ehad. Allâhus samed. Lem yelid ve lem yûled. Ve lem yekun lehû kufuven ehad.", 
+                anlam: "De ki: O Allah tektir. Allah sameddir (her şey O'na muhtaçtır, O hiçbir şeye muhtaç değildir). O, doğurmamış ve doğurulmamıştır. Hiçbir şey O'na denk değildir." 
+            },
+            { 
+                isim: "Sabah Zikir Duası", 
+                arapca: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ",
+                okunus: "Allahümme bike asbahnâ ve bike emseynâ ve bike nehyâ ve bike nemûtu ve ileyken nüşûr.", 
+                anlam: "Allah'ım! Senin yardımınla sabaha çıktık, senin yardımınla akşama erdik. Seninle yaşar, seninle ölürüz. Dönüş de ancak sanadır." 
             }
+        ],
+        "Öğle": [
+            { 
+                isim: "Salavat-ı Şerife", 
+                arapca: "اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ",
+                okunus: "Allahümme salli alâ seyyidinâ Muhammedin ve alâ âli seyyidinâ Muhammed.", 
+                anlam: "Allah'ım! Efendimiz Muhammed'e ve Efendimiz Muhammed'in âline (ailesine/takipçilerine) rahmet ve selam eyle." 
+            },
+            { 
+                isim: "Felak Suresi", 
+                arapca: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ﴿١﴾ مِنْ شَرِّ مَا خَلَقَ ﴿٢﴾ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ﴿٣﴾ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ﴿٤﴾ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ ﴿٥﴾",
+                okunus: "Kul e'ûzu birabbil felak. Min şerri mâ halak. Ve min şerri gâsikin izâ vakab. Ve min şerrin neffâsâti fil 'ukad. Ve min şerri hâsidin izâ hased.", 
+                anlam: "De ki: Yarattığı şeylerin şerrinden, karanlığı çöktüğü zaman gecenin şerrinden, düğümlere üfleyenlerin şerrinden ve haset ettiği zaman hasetçinin şerrinden sabahın Rabbine sığınırım." 
+            },
+            { 
+                isim: "Nas Suresi", 
+                arapca: "قُلْ أَعُوذُ بِرَبِّ النَّاسِ ﴿١﴾ مَلِكِ النَّاسِ ﴿٢﴾ إِلٰهِ النَّاسِ ﴿٣﴾ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ﴿٤﴾ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ﴿٥﴾ مِنَ الْجِنَّةِ وَالنَّاسِ ﴿٦﴾",
+                okunus: "Kul e'ûzu birabbin nâs. Melikin nâs. İlâhin nâs. Min şerril vesvâsil hannâs. Ellezî yuvesvisu fî sudûrin nâs. Minal cinneti ven nâs.", 
+                anlam: "De ki: İnsanların kalplerine vesvese sokan, insan ve cin şeytanlarının şerrinden insanların Rabbine, insanların malikine, insanların ilahına sığınırım." 
+            }
+        ],
+        "İkindi": [
+            { 
+                isim: "Asr Suresi", 
+                arapca: "وَالْعَصْرِ ﴿١﴾ إِنَّ الْإِنْسَانَ لَفِي خُسْرٍ ﴿٢﴾ إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ ﴿٣﴾",
+                okunus: "Vel 'asr. İnnel insâne lefî husr. İllellezîne âmenû ve 'amilus sâlihâti ve tevâsav bil hakkı ve tevâsav bis sabr.", 
+                anlam: "Andolsun zamana ki, insan gerçekten ziyan içindedir. Ancak iman edip salih ameller işleyenler, birbirlerine hakkı ve sabrı tavsiye edenler müstesnadır." 
+            },
+            { 
+                isim: "Seyyidül İstiğfar", 
+                arapca: "اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ",
+                okunus: "Allahümme ente rabbî lâ ilâhe illâ ente halaktenî ve ene abdüke ve ene alâ ahdike ve va'dike mesteta'tu, e'ûzu bike min şerri mâ sana'tu, ebûu leke binı'metike aleyye ve ebûu bizenbî fağfirlî fe innehû lâ yağfiruz zunûbe illâ ente.", 
+                anlam: "Allah'ım! Sen benim Rabbimsin. Senden başka ilah yoktur. Beni sen yarattın ve ben senin kulunum. Gücüm yettiğince sana verdiğim söz ve ahid üzerindeyim. Yaptıklarımın şerrinden sana sığınırım. Üzerimdeki nimetlerini itiraf eder, günahımı kabul ederim. Beni bağışla; çünkü günahları Senden başka bağışlayacak kimse yoktur." 
+            },
+            { 
+                isim: "İnşirah Suresi", 
+                arapca: "أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ ﴿١﴾ وَوَضَعْنَا عَنْكَ وِزْرَكَ ﴿٢﴾ الَّذِي أَنْقَضَ ظَهْرَكَ ﴿٣﴾ وَرَفَعْنَا لَكَ ذِكْرَكَ ﴿٤﴾ فَإِنَّ مَعَ الْعُسْرِ يُسْرًا ﴿٥﴾ إِنَّ مَعَ الْعُسْرِ يُسْرًا ﴿٦﴾ فَإِذَا فَرَغْتَ فَانْصَبْ ﴿٧﴾ وَإِلَىٰ رَبِّكَ فَارْغَبْ ﴿٨﴾",
+                okunus: "Elem neşrah leke sadrek. Ve vada'nâ 'anke vizrek. Ellezî enkada zahrek. Ve refa'nâ leke zikrek. Fe inne me'al 'usri yusrâ. İnne me'al 'usri yusrâ. Fe izâ feragte fensab. Ve ilâ rabbike fergab.", 
+                anlam: "Biz senin göğsünü açıp genişletmedik mi? Belini büken yükünü üzerinden kaldırmadık mı? Senin şanını yükseltmedik mi? Şüphesiz zorlukla beraber bir kolaylık vardır. Gerçekten zorlukla beraber bir kolaylık vardır. Öyleyse bir işi bitirince hemen diğerine koyul ve yalnız Rabbine yönel." 
+            }
+        ],
+        "Akşam": [
+            { 
+                isim: "Akşam Zikir Duası", 
+                arapca: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ",
+                okunus: "Emseynâ ve emsel mülkü lillâhi velhamdü lillâhi, lâ ilâhe illallâhu vahdehû lâ şerîke leh.", 
+                anlam: "Mülk Allah'ın olarak akşama erdik. Hamd Allah'a mahsustur. Allah'tan başka ilah yoktur, O tektir, ortağı yoktur." 
+            },
+            { 
+                isim: "Fatiha Suresi", 
+                arapca: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ﴿١﴾ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿٢﴾ الرَّحْمَٰنِ الرَّحِيمِ ﴿٣﴾ مَالِكِ يَوْمِ الدِّينِ ﴿٤﴾ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٥﴾ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٦﴾ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٧﴾",
+                okunus: "Bismillâhir rahmânir rahîm. Elhamdü lillâhi rabbil 'âlemîn. Er-rahmânir rahîm. Mâliki yevmid dîn. İyyâke na'budu ve iyyâke neste'în. İhdinas sırâtal mustakîm. Sırâtallezîne en'amte 'aleyhim gayril magdûbi 'aleyhim velâd dâllîn.", 
+                anlam: "Rahman ve Rahim olan Allah'ın adıyla. Hamd, alemlerin Rabbi olan Allah'a mahsustur. O, Rahman ve Rahim'dir. Hesap ve ceza gününün malikidir. Yalnız sana kulluk eder ve yalnız senden yardım dileriz. Bizi doğru yola, kendilerine nimet verdiklerinin yoluna ilet; gazaba uğrayanların ve sapıtanların yoluna değil." 
+            },
+            { 
+                isim: "Haşr Suresi (Son 3 Ayet)", 
+                arapca: "هُوَ اللَّهُ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ ۖ عَالِمُ الْغَيْبِ وَالشَّهَادَةِ ۖ هُوَ الرَّحْمَٰنُ الرَّحِيمُ ﴿٢٢﴾ هُوَ اللَّهُ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ الْمَلِكُ الْقُدُّوسُ السَّلَامُ الْمُؤْمِنُ الْمُهَيْمِنُ الْعَزِيزُ الْجَبَّارُ الْمُتَكَبِّرُ ۚ سُبْحَانَ اللَّهِ عَمَّا يُشْرِكُونَ ﴿٢٣﴾ هُوَ اللَّهُ الْخَالِقُ الْبَارِئُ الْمُصَوِّرُ ۖ لَهُ الْأَسْمَاءُ الْحُسْنَىٰ ۚ يُسَبِّحُ لَهُ مَا فِي السَّمَاوَاتِ وَالْأَرْضِ ۖ وَهُوَ الْعَزِيزُ الْحَكِيمُ ﴿٢٤﴾",
+                okunus: "Huvallâhullezî lâ ilâhe illâ hû, 'âlimul gaybi veş şehâdeh, huver rahmânur rahîm. Huvallâhullezî lâ ilâhe illâ hû, el-melikul kuddûsus selâmul mu'minul muheyminul 'azîzul cebbârul mutekebbir, subhânallâhi 'ammâ yuşrikûn. Huvallâhul hâlikul bâriul musavviru lehul esmâul husnâ, yusebbihu lehû mâ fis semâvâti vel ard, ve huvel 'azîzul hakîm.", 
+                anlam: "O, kendisinden başka ilah olmayan Allah'tır. Gaybı da, görünen alemi de bilendir. O, Rahman'dır, Rahim'dir. O, kendisinden başka ilah olmayan Allah'tır. O, Melik'tir, Kuddüs'tür, Selam'dır, Mü'min'dir, Müheymin'dir, Aziz'dir, Cebbar'dır, Mütekebbir'dir. Allah, onların ortak koştuklarından münezzehtir. O, yaratan, yoktan var eden, şekil veren Allah'tır. En güzel isimler O'nundur. Göklerde ve yerde olanların hepsi O'nu tesbih eder. O, Aziz'dir, Hakim'dir." 
+            }
+        ],
+        "Yatsı": [
+            { 
+                isim: "Amenerrasulu", 
+                arapca: "آمَنَ الرَّسُولُ بِمَا أُنْزِلَ إِلَيْهِ مِنْ رَبِّهِ وَالْمُؤْمِنُونَ ۚ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِنْ رُسُلِهِ ۚ وَقَالُوا سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ ﴿٢٨٥﴾ لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ۚ لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ ۗ رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنHTML kodunuzdaki `namazDualari` objesini, duaların **Arapça orijinal metinleri**, **eksiksiz okunuşları** ve **tam anlamları** eklenecek şekilde güncelleyip CSS ve render (görüntüleme) mantığını düzenledim. 
+
+Aşağıdaki kod **tüm dosyayı eksiksiz olarak içermektedir**. Eski kodunuzun tamamını silip doğrudan bunu yapıştırabilirsiniz:
+
+```html
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profesyonel Zikirmatik & İslami Rehber</title>
+
+    <!-- Leaflet CSS (Harita İçin) -->
+    <link rel="stylesheet" href="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.css](https://unpkg.com/leaflet@1.9.4/dist/leaflet.css)" />
+
+    <style>
+        :root {
+            --bg-color: #090a0f;
+            --card-bg: #12161f;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-green: #10b981;
+            --accent-green-dark: #059669;
+            --gold-color: #f59e0b;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --nav-bg: #111827;
         }
 
-        function initMap() {
-            window.mapInitialized = true;
-            setTimeout(() => {
-                const map = L.map('map').setView([21.4225, 39.8262], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: 'OpenStreetMap'
-                }).addTo(map);
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-                L.marker([21.4225, 39.8262]).addTo(map)
-                    .bindPopup('Mekke-i Mükerreme (Kabe-i Muazzama)')
-                    .openPopup();
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 15px;
+        }
+
+        .page-section {
+            display: none;
+            width: 100%;
+        }
+        .page-section.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--card-border);
+        }
+
+        .timer-box {
+            background: linear-gradient(135deg, #064e3b, #047857);
+            color: #ffffff;
+            text-align: center;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 20px rgba(4, 120, 87, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .timer-title { font-size: 13px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
+        .timer-clock { font-size: 36px; font-weight: 800; margin-top: 6px; font-family: monospace; letter-spacing: 2px; }
+
+        h2 { font-size: 18px; margin-top: 0; color: var(--accent-green); display: flex; justify-content: space-between; align-items: center; }
+        select, input {
+            width: 100%; padding: 14px; font-size: 15px; border-radius: 12px;
+            border: 1px solid var(--card-border); background: #1f2937; color: #fff;
+            margin-top: 8px; outline: none; transition: border-color 0.2s;
+        }
+        select:focus, input:focus { border-color: var(--accent-green); }
+
+        .counter-box { text-align: center; padding: 15px 0; user-select: none; }
+        .counter-display {
+            font-size: 60px; font-weight: 900; color: var(--accent-green);
+            margin: 10px 0; font-family: monospace; text-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+        .progress-bar-bg {
+            background: #1f2937; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 20px;
+        }
+        .progress-bar-fill {
+            background: var(--accent-green); height: 100%; width: 0%; transition: width 0.2s ease-out;
+        }
+
+        .btn-tap {
+            width: 100%; height: 130px; font-size: 24px; font-weight: 800;
+            background: linear-gradient(180deg, #10b981, #047857); color: white;
+            border: none; border-radius: 20px; cursor: pointer;
+            box-shadow: 0 8px 0 #064e3b, 0 12px 20px rgba(0,0,0,0.6);
+            transition: all 0.1s; letter-spacing: 1px;
+        }
+        .btn-tap:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #064e3b, 0 4px 10px rgba(0,0,0,0.6);
+        }
+        .btn-reset {
+            padding: 8px 14px; font-size: 12px; border-radius: 8px; border: none;
+            background: #ef4444; color: white; cursor: pointer; font-weight: bold;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #d97706, #f59e0b); color: #000;
+            font-weight: 800; width: 100%; padding: 14px; border-radius: 12px;
+            border: none; cursor: pointer; margin-top: 12px; font-size: 15px;
+        }
+
+        /* PUSULA VE HARİTA STİLLERİ */
+        .compass-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 0;
+        }
+        .compass-circle {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1f2937 0%, #111827 100%);
+            border: 6px solid var(--card-border);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease-out;
+        }
+        .compass-marker {
+            position: absolute;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .compass-n { top: 8px; color: #ef4444; }
+        .compass-s { bottom: 8px; color: var(--text-muted); }
+        .compass-e { right: 12px; color: var(--text-muted); }
+        .compass-w { left: 12px; color: var(--text-muted); }
+
+        .qibla-pointer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+            transition: transform 0.2s ease;
+        }
+        .kaaba-icon {
+            font-size: 26px;
+            filter: drop-shadow(0 0 8px var(--gold-color));
+        }
+
+        #map {
+            width: 100%;
+            height: 280px;
+            border-radius: 12px;
+            margin-top: 10px;
+            border: 1px solid var(--card-border);
+            z-index: 1;
+        }
+
+        .meaning { font-size: 13px; color: var(--text-muted); font-style: italic; margin-top: 6px; line-height: 1.4; }
+        .arabic-text {
+            font-family: 'Traditional Arabic', 'Scheherazade New', 'Amiri', serif;
+            font-size: 20px;
+            direction: rtl;
+            text-align: right;
+            color: #f3f4f6;
+            line-height: 1.8;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border-right: 3px solid var(--accent-green);
+        }
+        .list-item { border-bottom: 1px solid var(--card-border); padding: 14px 0; display: flex; flex-direction: column; }
+        .list-item:last-child { border-bottom: none; }
+        .item-header { display: flex; justify-content: space-between; align-items: center; }
+        .item-no { font-size: 12px; font-weight: bold; color: var(--gold-color); background: #1f2937; padding: 2px 8px; border-radius: 6px; }
+        .item-title { font-weight: 700; color: var(--accent-green); font-size: 16px; }
+        .mesnevi-box {
+            font-style: italic; font-size: 16px; color: var(--gold-color);
+            line-height: 1.6; padding: 16px; background: #1f2937;
+            border-left: 4px solid var(--gold-color); border-radius: 8px; margin-top: 12px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--nav-bg);
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 20%;
+            height: 100%;
+            transition: color 0.2s;
+        }
+        .nav-item .icon { font-size: 18px; margin-bottom: 3px; }
+        .nav-item.active { color: var(--accent-green); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="timer-box">
+        <div class="timer-title" id="vakit-baslik">Kalan Süre Hesaplanıyor...</div>
+        <div class="timer-clock" id="vakit-saat">00:00:00</div>
+    </div>
+
+    <!-- 1. ZİKİRMATİK SAYFASI -->
+    <div id="page-zikir" class="page-section active">
+        <div class="card">
+            <h2>
+                Zikirmatik
+                <button class="btn-reset" onclick="sifirla()">Sıfırla</button>
+            </h2>
+
+            <select id="zikir-secim" onchange="zikirDegistir()">
+                <option value="0">Sübhânallah (33)</option>
+                <option value="1">Elhamdülillâh (33)</option>
+                <option value="2">Allâhu Ekber (33)</option>
+                <option value="3">Lâ ilâhe illallâh (100)</option>
+                <option value="4">Astağfirullâh (100)</option>
+                <option value="5">Sübhânallahi ve bihamdihi (100)</option>
+                <option value="6">Lâ havle ve lâ kuvvete illâ billâh (100)</option>
+                <option value="7">Ya Allah (100)</option>
+                <option value="8">Ya Rahman (100)</option>
+                <option value="9">Ya Rahim (100)</option>
+            </select>
+
+            <div class="meaning" id="zikir-anlam">--</div>
+
+            <div class="counter-box">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="ilerleme-cubugu"></div>
+                </div>
+                <div class="counter-display" id="sayac">0 / 33</div>
+                <button class="btn-tap" onclick="artir()">ZİKİR ÇEK (+1)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. KIBLE PUSULASI VE HARİTA SAYFASI -->
+    <div id="page-pusula" class="page-section">
+        <div class="card" style="text-align: center;">
+            <h2>Kıble Pusulası</h2>
+            <p class="meaning">Cihazı düz tutarak pusulayı veya canlı haritayı kullanabilirsiniz.</p>
+            
+            <div class="compass-wrapper">
+                <div class="compass-circle" id="pusula-disk">
+                    <span class="compass-marker compass-n">N</span>
+                    <span class="compass-marker compass-e">E</span>
+                    <span class="compass-marker compass-s">S</span>
+                    <span class="compass-marker compass-w">W</span>
+                    <div class="qibla-pointer" id="kible-isaret">
+                        <span class="kaaba-icon" title="Kıble Yönü">🕋</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size: 14px; margin-bottom: 10px;" id="pusula-durum">
+                Mekke Açısı: <b id="kible-acisi-txt" style="color:var(--gold-color);">Hesaplanıyor...</b>
+            </div>
+            <button class="btn-gold" onclick="pusulaBaslat()">Pusulayı Etkinleştir 🧭</button>
+        </div>
+
+        <div class="card">
+            <h2>Haritada Canlı Kıble Çizgisi</h2>
+            <div class="meaning">Konumunuzdan Mekke'ye olan direkt hat haritada gösterilmektedir.</div>
+            <div id="map"></div>
+            <button class="btn-gold" style="margin-top:10px;" onclick="konumuBulVeHaritayaIsle()">Konumumu Haritada Güncelle 📍</button>
+        </div>
+    </div>
+
+    <!-- 3. ESMAÜL HÜSNA SAYFASI -->
+    <div id="page-esma" class="page-section">
+        <div class="card">
+            <h2>Esmaül Hüsna (99 İsim)</h2>
+            <input type="text" id="esma-ara" placeholder="İsim veya Anlam Ara..." onkeyup="esmaFiltrele()">
+            <div id="esma-listesi" style="margin-top: 15px; max-height: 500px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- 4. MESNEVİ SAYFASI -->
+    <div id="page-mesnevi" class="page-section">
+        <div class="card">
+            <h2 style="color: var(--gold-color);">Mesnevi'den Hikmetler</h2>
+            <div class="mesnevi-box" id="mesnevi-soz">Yükleniyor...</div>
+            <button class="btn-gold" onclick="rastgeleMesneviSozu()">Yeni Hikmet Getir 🎲</button>
+        </div>
+    </div>
+
+    <!-- 5. DUALAR VE ŞEHİR SAYFASI -->
+    <div id="page-dualar" class="page-section">
+        <div class="card">
+            <h2>Şehir Ayarı</h2>
+            <select id="sehir-secim" onchange="sehirDegistir()">
+                <option value="Ankara">Ankara</option>
+                <option value="Istanbul">İstanbul</option>
+                <option value="Izmir">İzmir</option>
+                <option value="Bursa">Bursa</option>
+                <option value="Antalya">Antalya</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <h2>Namaz Duaları ve Sureler</h2>
+            <select id="vakit-duasi-secim" onchange="dualarıGoster()">
+                <option value="Sabah">Sabah Namazı Duaları (3)</option>
+                <option value="Öğle">Öğle Namazı Duaları (3)</option>
+                <option value="İkindi">İkindi Namazı Duaları (3)</option>
+                <option value="Akşam">Akşam Namazı Duaları (3)</option>
+                <option value="Yatsı">Yatsı Namazı Duaları (3)</option>
+            </select>
+            <div id="dua-listesi" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="sayfaDegistir('zikir', this)">
+        <span class="icon">📿</span>
+        <span>Zikirmatik</span>
+    </div>
+    <div class="nav-item" onclick="sayfaDegistir('pusula', this)">
+        <span class="icon">🧭</span>
+        <span>Kıble</span>
+    </div>
+    <div class="nav-item" onclick="sayfaDegistir('esma', this)">
+        <span class="icon">🌟</span>
+        <span>Esmaül Hüsna</span>
+    </div>
+    <div class="nav-item" onclick="sayfaDegistir('mesnevi', this)">
+        <span class="icon">📜</span>
+        <span>Mesnevi</span>
+    </div>
+    <div class="nav-item" onclick="sayfaDegistir('dualar', this)">
+        <span class="icon">🤲</span>
+        <span>Dualar</span>
+    </div>
+</div>
+
+<!-- Leaflet JS (Harita İçin) -->
+<script src="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.js](https://unpkg.com/leaflet@1.9.4/dist/leaflet.js)"></script>
+
+<script>
+    const zikirler = [
+        { isim: "Sübhânallah", hedef: 33, anlam: "Allah noksan sıfatlardan uzaktır." },
+        { isim: "Elhamdülillâh", hedef: 33, anlam: "Hamd Allah'a mahsustur." },
+        { isim: "Allâhu Ekber", hedef: 33, anlam: "Allah en büyüktür." },
+        { isim: "Lâ ilâhe illallâh", hedef: 100, anlam: "Allah'tan başka ilah yoktur." },
+        { isim: "Astağfirullâh", hedef: 100, anlam: "Allah'tan bağışlanma dilerim." },
+        { isim: "Sübhânallahi ve bihamdihi", hedef: 100, anlam: "Allah'ı hamd ile tesbih ederim." },
+        { isim: "Lâ havle ve lâ kuvvete illâ billâh", hedef: 100, anlam: "Güç ve kuvvet ancak Allah'ındır." },
+        { isim: "Ya Allah", hedef: 100, anlam: "Her şeyin tek yaratıcısı." },
+        { isim: "Ya Rahman", hedef: 100, anlam: "Dünyada tüm mahlukata merhamet eden." },
+        { isim: "Ya Rahim", hedef: 100, anlam: "Ahirette sadece müminlere merhamet eden." }
+    ];
+
+    const esmaListesi = [
+        { no: 1, isim: "Allah", anlam: "Eşi benzeri olmayan, bütün noksanlıklardan münezzeh, tek ilah." },
+        { no: 2, isim: "Er-Rahmân", anlam: "Dünyada bütün mahlukata merhamet eden, şefkat gösteren." },
+        { no: 3, isim: "Er-Rahîm", anlam: "Ahirette sadece müminlere merhamet ve ihsan eden." },
+        { no: 4, isim: "El-Melik", anlam: "Bütün kainatın, mülkün tek sahibi ve mutlak hükümdarı." },
+        { no: 5, isim: "El-Kuddûs", anlam: "Her türlü ayıptan, kusurdan ve noksanlıktan uzak, pek temiz." },
+        { no: 6, isim: "Es-Selâm", anlam: "Kullarını tehlikelerden selamete çıkaran, esenlik veren." },
+        { no: 7, isim: "El-Mü'min", anlam: "Gönüllere iman veren, sığınanları emniyete kavuşturan." },
+        { no: 8, isim: "El-Müheymin", anlam: "Her şeyi gözeten, koruyan ve denetim altında tutan." },
+        { no: 9, isim: "El-Azîz", anlam: "Mutlak güç sahibi, yenilmesi imkansız olan galip." },
+        { no: 10, isim: "El-Cebbâr", anlam: "Dilediğini zorla yaptıran, kırılanları onaran, eksikleri tamamlayan." },
+        { no: 11, isim: "El-Mütekebbiri", anlam: "Büyüklükte eşi ve benzeri olmayan, azamet sahibi." },
+        { no: 12, isim: "El-Hâlık", anlam: "Her şeyi yoktan var eden, yaratan." },
+        { no: 13, isim: "El-Bâri", anlam: "Her şeyi kusursuz, oranlı ve birbiriyle uyumlu yaratan." },
+        { no: 14, isim: "El-Musavvir", anlam: "Yaratıklarına dilediği şekli ve sureti veren." },
+        { no: 15, isim: "El-Gaffâr", anlam: "Kullarının günahlarını örten, bağışlaması çok bol olan." },
+        { no: 16, isim: "El-Kahhâr", anlam: "Her şeye galip gelen, mutlak hakimiyetiyle ezen." },
+        { no: 17, isim: "El-Vehhâb", anlam: "Karşılıksız, hibe olarak bolca nimet bağışlayan." },
+        { no: 18, isim: "Er-Razzâk", anlam: "Bütün canlıların rızkını veren ve ihtiyacını karşılayan." },
+        { no: 19, isim: "El-Fettâh", anlam: "Her türlü kapıyı ve zorluğu açan, darlıkları ferahlatan." },
+        { no: 20, isim: "El-Alîm", anlam: "Gizli ve açık her şeyi en ince ayrıntısına kadar bilen." },
+        { no: 21, isim: "El-Kâbıd", anlam: "Dilediğine rızkı daraltan, ruhları kabzeden." },
+        { no: 22, isim: "El-Bâsit", anlam: "Dilediğine rızkı genişleten, ruhları ferahlatan." },
+        { no: 23, isim: "El-Hâfıd", anlam: "Dereceleri alçaltan, kafirleri rezil ve rüsvay eden." },
+        { no: 24, isim: "Er-Râfi", anlam: "Şeref ve dereceleri yükselten, müminleri yücelten." },
+        { no: 25, isim: "El-Mu'ız", anlam: "Dilediğine izzet ve şeref veren, onu aziz kılan." },
+        { no: 26, isim: "El-Müzil", anlam: "Dilediğini zillete düşüren, hor ve hakir kılan." },
+        { no: 27, isim: "Es-Semî", anlam: "Her şeyi en iyi işiten, duaları kabul eden." },
+        { no: 28, isim: "El-Basîr", anlam: "Gizli açık her şeyi en küçük ayrıntısına kadar gören." },
+        { no: 29, isim: "El-Hakem", anlam: "Mutlak hakim, hakkı batıldan ayıran ve hüküm veren." },
+        { no: 30, isim: "El-Adl", anlam: "Mutlak adalet sahibi, hiçbir mahlukuna zulmetmeyen." },
+        { no: 31, isim: "El-Latîf", anlam: "Kullarına lütfeden, en ince işlerin detayını bilen." },
+        { no: 32, isim: "El-Habîr", anlam: "Her şeyin gizli ve iç yüzünden haberdar olan." },
+        { no: 33, isim: "El-Halîm", anlam: "Cezalandırmada acele etmeyen, yumuşaklık sahibi." },
+        { no: 34, isim: "El-Azîm", anlam: "Büyüklüğünün ve azametinin sınırı olmayan." },
+        { no: 35, isim: "El-Gafûr", anlam: "Mağfireti ve af dileyenleri bağışlaması çok bol olan." },
+        { no: 36, isim: "Eş-Şekûr", anlam: "Kendi rızası için yapılan şükür ve amelleri bolca ödüllendiren." },
+        { no: 37, isim: "El-Aliyy", anlam: "Yücelikte üstüne olmayan, şanı pek yüce." },
+        { no: 38, isim: "El-Kebîr", anlam: "Büyüklükte eşi benzeri bulunmayan, pek büyük." },
+        { no: 39, isim: "El-Hafîz", anlam: "Her şeyi koruyup gözeten, koruyucu." },
+        { no: 40, isim: "El-Mukît", anlam: "Bütün canlıların gıdasını ve azığını veren." },
+        { no: 41, isim: "El-Hasîb", anlam: "Herkesin hesabını en iyi gören, kullarına yeten." },
+        { no: 42, isim: "El-Celîl", anlam: "Azamet ve celal sahibi, yüceler yücesi." },
+        { no: 43, isim: "El-Kerîm", anlam: "İkramı ve cömertliği sonsuz olan, bolca veren." },
+        { no: 44, isim: "Er-Rakîb", anlam: "Her varlığı ve ameli anbean kontrol edip gözeten." },
+        { no: 45, isim: "El-Mücîb", anlam: "Duaları, niyazları kabul edip karşılık veren." },
+        { no: 46, isim: "El-Vâsi", anlam: "İlmi, rahmeti ve merhameti her şeyi kuşatan." },
+        { no: 47, isim: "El-Hakîm", anlam: "Her emri ve işi hikmetli olan, nedensiz iş yapmayan." },
+        { no: 48, isim: "El-Vedûd", anlam: "Kullarını çok sev en ve sevilmeye en layık olan." },
+        { no: 49, isim: "El-Mecîd", anlam: "Şanı, şerefi ve övgüsü pek yüce olan." },
+        { no: 50, isim: "El-Bâis", anlam: "Ölüleri diriltip kabirlerinden çıkaran, peygamber gönderen." },
+        { no: 51, isim: "Eş-Şehîd", anlam: "Her zaman ve her yerde hazır, her şeye şahit olan." },
+        { no: 52, isim: "El-Hakk", anlam: "Varlığı hiç değişmeden duran, varlığı mutlak gerçek olan." },
+        { no: 53, isim: "El-Vekîl", anlam: "Kendisine tevekkül edenlerin işlerini en iyi şekilde halleden." },
+        { no: 54, isim: "El-Kaviyy", anlam: "Sonsuz kudret ve kuvvet sahibi." },
+        { no: 55, isim: "El-Metîn", anlam: "Çok sağlam, sarsılmaz güç sahibi." },
+        { no: 56, isim: "El-Veliyy", anlam: "Müminlerin dostu ve yardımcısı." },
+        { no: 57, isim: "El-Hamîd", anlam: "Her türlü övgüye layık olan." },
+        { no: 58, isim: "El-Muhsî", anlam: "Yaratılmış her şeyin sayısını teker teker bilen." },
+        { no: 59, isim: "El-Mübdi", anlam: "Maddesiz ve örneksiz olarak ilk defa yaratan." },
+        { no: 60, isim: "El-Muîd", anlam: "Yaratılmışları yok ettikten sonra tekrar dirilten." },
+        { no: 61, isim: "El-Muhyî", anlam: "Can veren, hayat bağışlayan." },
+        { no: 62, isim: "El-Mümît", anlam: "Canlıların hayatına son veren, öldüren." },
+        { no: 63, isim: "El-Hayy", anlam: "Daima diri, hayatı ezeli ve ebedi olan." },
+        { no: 64, isim: "El-Kayyûm", anlam: "Gökleri ve yeri tutan, her şeyi ayakta tutan." },
+        { no: 65, isim: "El-Vâcid", anlam: "Aradığı ve dilediği her şeyi anında bulan." },
+        { no: 66, isim: "El-Mâcid", anlam: "Cömertliği ve şanı büyüklükte eşsiz olan." },
+        { no: 67, isim: "El-Vâhid", anlam: "Zatında, sıfatlarında ve fiillerinde tek olan." },
+        { no: 68, isim: "Es-Samed", anlam: "Hiçbir şeye ihtiyacı olmayan, herkesin kendisine muhtaç olduğu." },
+        { no: 69, isim: "El-Kâdir", anlam: "İstediğini istediği gibi yapmaya gücü yeten." },
+        { no: 70, isim: "El-Muktedir", anlam: "Kudret sahibi, kuvvetiyle her şeyi yöneten." },
+        { no: 71, isim: "El-Mukaddim", anlam: "Dilediğini öne alan, ileri geçiren." },
+        { no: 72, isim: "El-Muahhir", anlam: "Dilediğini geride bırakan, erteleyen." },
+        { no: 73, isim: "El-Evvel", anlam: "Başlangıcı olmayan, ezeli olan." },
+        { no: 74, isim: "El-Âhir", anlam: "Sonu olmayan, ebedi olan." },
+        { no: 75, isim: "Ez-Zâhir", anlam: "Varlığı açık, eserleriyle aşikar olan." },
+        { no: 76, isim: "El-Bâtın", anlam: "Gizli olan, akılların kavrayamayacağı mahiyette olan." },
+        { no: 77, isim: "El-Vâli", anlam: "Bütün kainatı tek başına yöneten idareci." },
+        { no: 78, isim: "El-Müteâli", anlam: "Aklın alabileceği her şeyden yüce ve üstün olan." },
+        { no: 79, isim: "El-Berr", anlam: "İyiliği ve ihsanı bol olan, iyilik sever." },
+        { no: 80, isim: "Et-Tevvâb", anlam: "Tövbeleri kabul edip günahları bağışlayan." },
+        { no: 81, isim: "El-Müntakim", anlam: "Suçluları adaletiyle cezalandırıp intikam alan." },
+        { no: 82, isim: "El-Afüvv", anlam: "Çok affeden, günahları hiç yokmuş gibi silen." },
+        { no: 83, isim: "Er-Raûf", anlam: "Çok şefkatli, kullarına acıyan." },
+        { no: 84, isim: "Mâlik-ül Mülk", anlam: "Mülkün ebedi sahibi." },
+        { no: 85, isim: "Zül-Celâli vel İkrâm", anlam: "Büyüklük, azamet ve ikram sahibi." },
+        { no: 86, isim: "El-Muksit", anlam: "Adaletle hükmeden, mazlumun hakkını alan." },
+        { no: 87, isim: "El-Câmi", anlam: "İstediğini istediği zaman ve yerde toplayan." },
+        { no: 88, isim: "El-Ganiyy", anlam: "Çok zengin, hiçbir şeye muhtaç olmayan." },
+        { no: 89, isim: "El-Muğnî", anlam: "Dilediğini zengin kılan, ihtiyacını gideren." },
+        { no: 90, isim: "El-Mâni", anlam: "Dilediği şeyin gerçekleşmesine engel olan." },
+        { no: 91, isim: "Ed-Dârr", anlam: "Elem ve zarar verecek şeyleri yaratan." },
+        { no: 92, isim: "En-Nâfi", anlam: "Fayda ve yarar sağlayacak şeyleri yaratan." },
+        { no: 93, isim: "En-Nûr", anlam: "Alemleri aydınlatan, nurlar saçan." },
+        { no: 94, isim: "El-Hâdî", anlam: "Hidayet veren, doğru yolu gösteren." },
+        { no: 95, isim: "El-Bedî", anlam: "Örneksiz, emsalsiz harikalar yaratan." },
+        { no: 96, isim: "El-Bâkı", anlam: "Varlığının sonu olmayan, ebedi kalan." },
+        { no: 97, isim: "El-Vâris", anlam: "Bütün mülkün gerçek ve ebedi varisi." },
+        { no: 98, isim: "Er-Reşîd", anlam: "Bütün işleri isabetli olan, doğru yolu gösteren." },
+        { no: 99, isim: "Es-Sabûr", anlam: "Çok sabırlı olan, cezalandırmada acele etmeyen." }
+    ];
+
+    const namazDualari = {
+        "Sabah": [
+            {
+                isim: "Ayet-el Kürsi",
+                arapca: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ",
+                okunus: "Allâhu lâ ilâhe illâ huvel hayyul kayyûm, lâ te'huzuhû sinetuv velâ nevm, lehû mâ fis semâvâti vemâ fil ard, men zellezî yeşfe'u indehû illâ bi iznih, ya'lemu mâ beyne eydîhim vemâ halfehum, velâ yuhîtûne bişey'im min ilmihî illâ bimâ şâ', vesia kursiyyuhus semâvâti vel ard, velâ yeûduhû hıfzuhumâ, ve huvel aliyyul azîm.",
+                anlam: "Allah, O'ndan başka ilah yoktur. O diridir, kayyumdur (her şeyi yönetendir). O'nu ne bir uyuklama tutar ne de uyku. Göklerde ve yerde ne varsa hepsi O'nundur. O'nun izni olmadan katında kim şefaat edebilir? O, kullarının önlerindekini ve arkalarındakini bilir. İnsanlar ise O'nun dilediği kadarından başka ilminden hiçbir şeyi kavrayamazlar. O'nun kürsüsü gökleri ve yeri kaplamıştır. Onları koruyup gözetmek O'na ağır gelmez. O çok yücedir, çok büyüktür."
+            },
+            {
+                isim: "İhlas Suresi",
+                arapca: "قُلْ هُوَ اللَّهُ أَحَدٌ ﴿١﴾ اللَّهُ الصَّمَدُ ﴿٢﴾ لَمْ يَلِدْ وَلَمْ يُولَدْ ﴿٣﴾ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ ﴿٤﴾",
+                okunus: "Kul huvallâhu ehad. Allâhus samed. Lem yelid ve lem yûled. Ve lem yekun lehû kufuven ehad.",
+                anlam: "De ki: O Allah tektir. Allah sameddir (her şey O'na muhtaçtır, O hiçbir şeye muhtaç değildir). O, doğurmamış ve doğurulmamıştır. Hiçbir şey O'na denk değildir."
+            },
+            {
+                isim: "Sabah Zikir Duası",
+                arapca: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ",
+                okunus: "Allahümme bike asbahnâ ve bike emseynâ ve bike nehyâ ve bike nemûtu ve ileyken nüşûr.",
+                anlam: "Allah'ım! Senin yardımınla sabaha çıktık, senin yardımınla akşama erdik. Seninle yaşar, seninle ölürüz. Dönüş de ancak sanadır."
+            }
+        ],
+        "Öğle": [
+            {
+                isim: "Salavat-ı Şerife",
+                arapca: "اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ",
+                okunus: "Allahümme salli alâ seyyidinâ Muhammedin ve alâ âli seyyidinâ Muhammed.",
+                anlam: "Allah'ım! Efendimiz Muhammed'e ve Efendimiz Muhammed'in ailesine salat ve selam eyle."
+            },
+            {
+                isim: "Felak Suresi",
+                arapca: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ﴿١﴾ مِنْ شَرِّ مَا خَلَقَ ﴿٢﴾ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ﴿٣﴾ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ﴿٤﴾ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ ﴿٥﴾",
+                okunus: "Kul e'ûzu birabbil felak. Min şerri mâ halak. Ve min şerri gâsikin izâ vakab. Ve min şerrin neffâsâti fil 'ukad. Ve min şerri hâsidin izâ hased.",
+                anlam: "De ki: Yarattığı şeylerin şerrinden, karanlığı çöktüğü zaman gecenin şerrinden, düğümlere üfleyenlerin şerrinden ve hased ettiği zaman hasetçinin şerrinden sabahın Rabbine sığınırım."
+            },
+            {
+                isim: "Nas Suresi",
+                arapca: "قُلْ أَعُوذُ بِرَبِّ النَّاسِ ﴿١﴾ مَلِكِ النَّاسِ ﴿٢﴾ إِلٰهِ النَّاسِ ﴿٣﴾ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ﴿٤﴾ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ﴿٥﴾ مِنَ الْجِنَّةِ وَالنَّاسِ ﴿٦﴾",
+                okunus: "Kul e'ûzu birabbin nâs. Melikin nâs. İlâhin nâs. Min şerril vesvâsil hannâs. Ellezî yuvesvisu fî sudûrin nâs. Minel cinneti ven nâs.",
+                anlam: "De ki: İnsanların kalplerine vesvese sokan, insan ve cin vesvesecilerinin şerrinden insanların Rabbine, insanların padişahına, insanların ilahına sığınırım."
+            }
+        ],
+        "İkindi": [
+            {
+                isim: "Asr Suresi",
+                arapca: "وَالْعَصْرِ ﴿١﴾ إِنَّ الْإِنْسَانَ لَفِي خُسْرٍ ﴿٢﴾ إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ ﴿٣﴾",
+                okunus: "Vel 'asr. İnnel insâne lefî husr. İllellezîne âmenû ve 'amilus sâlihâti ve tevâsav bil hakkı ve tevâsav bis sabr.",
+                anlam: "Andolsun zamana ki, insan gerçekten ziyan içindedir. Ancak iman edip dünya ve ahiret için yararlı işler yapanlar, birbirlerine hakkı ve sabrı tavsiye edenler müstesnadır."
+            },
+            {
+                isim: "Seyyidül İstiğfar",
+                arapca: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
+                okunus: "Allahümme ente rabbî lâ ilâhe illâ ente halaktenî ve ene 'abduke ve ene 'alâ 'ahdike ve va'dike mastata'tu, e'ûzu bike min şerri mâ sana'tu, ebûu leke binı'metike 'aleyye ve ebûu bizenbî fağfirlî fe innehû lâ yağfiruz zunûbe illâ ente.",
+                anlam: "Allah'ım! Sen benim Rabbimsin, Senden başka ilah yoktur. Beni Sen yarattın, ben Senin kulunum. Gücüm yettiğince Sana verdiğim söz ve ahid üzerindeyim. Yaptıkları kötülüklerin şerrinden Sana sığınırım. Bana verdiğin nimetleri itiraf eder, günahlarımı kabul ederim. Beni bağışla, çünkü günahları Senden başkası bağışlayamaz."
+            },
+            {
+                isim: "İnşirah Suresi",
+                arapca: "أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ ﴿١﴾ وَوَضَعْنَا عَنْكَ وِزْرَكَ ﴿٢﴾ الَّذِي أَنْقَضَ ظَهْرَكَ ﴿٣﴾ وَرَفَعْنَا لَكَ ذِكْرَكَ ﴿٤﴾ فَإِنَّ مَعَ الْعُسْرِ يُسْرًا ﴿٥﴾ إِنَّ مَعَ الْعُسْرِ يُسْرًا ﴿٦﴾ فَإِذَا فَرَغْتَ فَانْصَبْ ﴿٧﴾ وَإِلَىٰ رَبِّكَ فَارْغَبْ ﴿٨﴾",
+                okunus: "Elem neşrah leke sadrek. Ve vada'nâ 'anke vizrek. Ellezî enkada zahrek. Ve refe'nâ leke zikrek. Fe inne me'al 'usri yusrâ. İnne me'al 'usri yusrâ. Fe izâ feragte fensab. Ve ilâ rabbike fergab.",
+                anlam: "Biz senin göğsünü açıp genişletmedik mi? Belini büken yükünü üzerinden kaldırmadık mı? Senin şanını yükseltmedik mi? Şüphesiz zorlukla beraber bir kolaylık vardır. Gerçekten zorlukla beraber bir kolaylık vardır. Öyleyse, bir işi bitirince hemen diğerine koyul ve yalnız Rabbine yönel."
+            }
+        ],
+        "Akşam": [
+            {
+                isim: "Akşam Zikir Duası",
+                arapca: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ",
+                okunus: "Emseynâ ve emsel mülkü lillâhi velhamdü lillâh, lâ ilâhe illallâhu vahdehû lâ şerîke leh.",
+                anlam: "Mülk Allah'ın olarak akşama ulaştık. Hamd Allah'a mahsustur. Allah'tan başka ilah yoktur, O tektir, ortağı yoktur."
+            },
+            {
+                isim: "Fatiha Suresi",
+                arapca: "بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيمِ ﴿١﴾ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿٢﴾ الرَّحْمٰنِ الرَّحِيمِ ﴿٣﴾ مَالِكِ يَوْمِ الدِّينِ ﴿٤﴾ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٥﴾ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٦﴾ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٧﴾",
+                okunus: "Bismillâhir rahmânir rahîm. Elhamdü lillâhi rabbil 'âlemîn. Er-rahmânir rahîm. Mâliki yevmid dîn. İyyâke na'budu ve iyyâke neste'în. İhdinas sırâtal mustakîm. Sırâtallezîne en'amte 'aleyhim ğayril mağdûbi 'aleyhim ve lad dâllîn.",
+                anlam: "Rahmân ve Rahîm olan Allah'ın adıyla. Hamd, âlemlerin Rabbi, Rahmân, Rahîm, hesap ve ceza gününün maliki olan Allah'a mahsustur. Yalnız sana kulluk ederiz ve yalnız senden yardım dileriz. Bizi doğru yola, kendilerine nimet verdiklerinin yoluna ilet; gazaba uğrayanların ve sapanların yoluna değil."
+            },
+            {
+                isim: "Haşr Suresi (Son 3 Ayet)",
+                arapca: "هُوَ اللَّهُ الَّذِي لَا إِلٰهَ إِلَّا هُوَ ۖ عَالِمُ الْغَيْبِ وَالشَّهَادَةِ ۖ هُوَ الرَّحْمٰنُ الرَّحِيمُ ﴿٢٢﴾ هُوَ اللَّهُ الَّذِي لَا إِلٰهَ إِلَّا هُوَ الْمَلِكُ الْقُدُّوسُ السَّلَامُ الْمُؤْمِنُ الْمُهَيْمِنُ الْعَزِيزُ الْجَبَّارُ الْمُتَكَبِّرُ ۚ سُبْحَانَ اللَّهِ عَمَّا يُشْرِكُونَ ﴿٢٣﴾ هُوَ اللَّهُ الْخَالِقُ الْبَارِئُ الْمُصَوِّرُ ۖ لَهُ الْأَسْمَاءُ الْحُسْنَىٰ ۚ يُسَبِّحُ لَهُ مَا فِي السَّمَاوَاتِ وَالْأَرْضِ ۖ وَهُوَ الْعَزِيزُ الْحَكِيمُ ﴿٢٤﴾",
+                okunus: "Huvallâhullezî lâ ilâhe illâ hû, 'âlimul ğaybi veşşehâdeh, huver rahmânur rahîm. Huvallâhullezî lâ ilâhe illâ hû, elmelikul kuddûsus selâmul mu'minul muheyminul 'azîzul cebbârul mutekebbir, subhânallâhi 'ammâ yuşrikûn. Huvallâhul hâlikul bâriul musavviru lehul esmâul husnâ, yusebbihu lehû mâ fis semâvâti vel ard, ve huvel 'azîzul hakîm.",
+                anlam: "O, kendisinden başka hiçbir ilah bulunmayan Allah'tır. Gaybı da, görünen âlemi de bilendir. O, Rahmân'dır, Rahîm'dir. O, kendisinden başka hiçbir ilah bulunmayan Allah'tır. Mülkün gerçek sahibidir, eksikliklerden münezzektir, esenlik verendir, emniyete kavuşturandır, gözeticidir, üstündür, mutlak güç sahibidir, büyüklükte eşsizdir. Allah, ortak koştukları şeylerden münezzektir. O, yaratan, yoktan var eden, şekil veren Allah'tır. En güzel isimler O'nundur. Göklerde ve yerde ne varsa O'nu tesbih eder. O, üstündür, hikmet sahibidir."
+            }
+        ],
+        "Yatsı": [
+            {
+                isim: "Amenerrasulu",
+                arapca: "آمَنَ الرَّسُولُ بِمَا أُنْزِلَ إِلَيْهِ مِنْ رَبِّهِ وَالْمُؤْمِنُونَ ۚ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِنْ رُسُلِهِ ۚ وَقَالُوا سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ ﴿٢٨٥﴾ لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ۚ لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ ۗ رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنْتَ مَوْلَانَا فَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ ﴿٢٨٦﴾",
+                okunus: "Âmener rasûlu bimâ unzile ileyhi min rabbihî vel mu'minûn, kullun âmene billâhi ve melâiketihî ve kutubihî ve rusulih, lâ nuferriku beyne ehadim min rusulih, ve kâlû semi'nâ ve ata'nâ ğufrâneke rabbenâ ve ileykel masîr. Lâ yukellifullâhu nefsen illâ vus'ahâ, lehâ mâ kesebet ve 'aleyhâ mektesebet, rabbenâ lâ tuâhiznâ in nesînâ ev ahta'nâ, rabbenâ velâ tahmil 'aleynâ ısran kemâ hameltehû 'alellezîne min kablinâ, rabbenâ velâ tuhammilnâ mâ lâ tâkate lenâ bih, va'fu 'annâ, vağfir lenâ, verhamnâ, ente mevlânâ fensurnâ 'alel kavmil kâfirîn.",
+                anlam: "Peygamber, Rabbinden kendisine indirilene iman etti, müminler de. Hepsı Allah'a, meleklerine, kitaplarına ve peygamberlerine iman ettiler. 'Biz O'nun peygamberleri arasında hiçbir ayrım yapmayız' dediler ve eklediler: 'İşittik ve itaat ettik. Rabbimiz, bağışlamanı dileriz; dönüş sanadır.' Allah hiçbir kimseye gücünün yeteceğinden fazlasını yüklemez. Herkesin kazandığı iyilik kendi lehine, yaptığı kötülük de kendi aleyhinedir. 'Rabbimiz! Unutur veya yanılırsak bizi sorumlu tutma! Rabbimiz! Bize, bizden öncekilere yüklediğin gibi ağır yük yükleme! Rabbimiz! Gücümüzün yetmediği şeyleri de bize taşıtma! Bizi affet, bizi bağışla, bize merhamet et! Sen bizim mevlamızsın; kafirler topluluğuna karşı bize yardım et!'"
+            },
+            {
+                isim: "Mülk Suresi (İlk 3 Ayet)",
+                arapca: "تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ ﴿١﴾ الَّذِي خَلَقَ الْمَوْتَ وَالْحَيَاةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا ۚ وَهُوَ الْعَزِيزُ الْغَفُورُ ﴿٢﴾ الَّذِي خَلَقَ سَبْعَ سَمَاوَاتٍ طِبَاقًا ۖ مَا تَرَىٰ فِي خَلْقِ الرَّحْمٰنِ مِنْ تَفَاوُتٍ ۖ فَارْجِعِ الْبَصَرَ هَلْ تَرَىٰ مِنْ فُطُورٍ ﴿٣﴾",
+                okunus: "Tebârekellezî biyedihil mulku ve huve 'alâ kulli şey'in kadîr. Ellezî halakal mevte vel hayâte liyebluvekum eyyukum ahsenu 'amelâ, ve huvel 'azîzul ğafûr. Ellezî halaka seb'a semâvâtin tibâkâ, mâ terâ fî halkır rahmâni min tefâvut, ferci'il basara hel terâ min futûr.",
+                anlam: "Mülk ve hükümdarlık elinde olan Allah ne yücedir. O, her şeye kadirdir. O, hanginizin daha güzel amel yapacağını sınamak için ölümü ve hayatı yaratmıştır. O üstündür, bağışlayandır. O, yedi göğü birbiriyle ahenk içinde yaratandır. Rahmân'ın yaratmasında hiçbir düzensizlik göremezsin. Gözünü çevir de bak, bir çatlak görebiliyor musun?"
+            },
+            {
+                isim: "Kafirun Suresi",
+                arapca: "قُلْ يَا أَيُّهَا الْكَافِرُونَ ﴿١﴾ لَا أَعْبُدُ مَا تَعْبُدُونَ ﴿٢﴾ وَلَا أَنْتُمْ عَابِدُونَ مَا أَعْبُدُ ﴿٣﴾ وَلَا أَنَا عَابِدٌ مَا عَبَدْتُمْ ﴿٤﴾ وَلَا أَنْتُمْ عَابِدُونَ مَا أَعْبُدُ ﴿٥﴾ لَكُمْ دِينُكُمْ وَلِيَ دِينِ ﴿٦﴾",
+                okunus: "Kul yâ eyyuhel kâfirûn. Lâ a'budu mâ ta'budûn. Ve lâ entum 'âbidûne mâ a'bud. Ve lâ ene 'âbidum mâ 'abadtum. Ve lâ entum 'âbidûne mâ a'bud. Lekum dînukum veliye dîn.",
+                anlam: "De ki: Ey kafirler! Ben sizin taptıklarınıza tapmam. Siz de benim taptığıma tapacak değilsiniz. Ben sizin taptıklarınıza tapacak değilim. Siz de benim taptığıma tapacak değilsiniz. Sizin dininiz size, benim dinim banadır."
+            }
+        ]
+    };
+
+    const mesneviSozleri = [
+        "Dünle beraber gitti, düne ait ne varsa cancağızım. Şimdi yeni şeyler söylemek lazım.",
+        "Aşk, davaya benzer; cefa çekmek de şahide. Şahidin yoksa davayı kazanamazsın.",
+        "Göz neredeyse can oradadır; gönül neredeyse dost oradadır.",
+        "Mum olmak kolay değildir. Işık saçmak için önce yanmak gerekir.",
+        "Kalp denizdir, dil de kıyı. Denizde ne varsa kıyıya o vurur.",
+        "Edep, aklın dışarıdan görünüşüdür.",
+        "Bir mum diğer mumu tutuşturmakla ışığından bir şey kaybetmez."
+    ];
+
+    const sehirVakitleri = {
+        "Ankara": [ { isim: "Sabah", saat: "05:20" }, { isim: "Öğle", saat: "12:55" }, { isim: "İkindi", saat: "16:20" }, { isim: "Akşam", saat: "19:05" }, { isim: "Yatsı", saat: "20:30" } ],
+        "Istanbul": [ { isim: "Sabah", saat: "05:35" }, { isim: "Öğle", saat: "13:10" }, { isim: "İkindi", saat: "16:35" }, { isim: "Akşam", saat: "19:20" }, { isim: "Yatsı", saat: "20:45" } ],
+        "Izmir": [ { isim: "Sabah", saat: "05:42" }, { isim: "Öğle", saat: "13:17" }, { isim: "İkindi", saat: "16:42" }, { isim: "Akşam", saat: "19:27" }, { isim: "Yatsı", saat: "20:50" } ],
+        "Bursa": [ { isim: "Sabah", saat: "05:34" }, { isim: "Öğle", saat: "13:09" }, { isim: "İkindi", saat: "16:34" }, { isim: "Akşam", saat: "19:19" }, { isim: "Yatsı", saat: "20:44" } ],
+        "Antalya": [ { isim: "Sabah", saat: "05:28" }, { isim: "Öğle", saat: "13:00" }, { isim: "İkindi", saat: "16:26" }, { isim: "Akşam", saat: "19:08" }, { isim: "Yatsı", saat: "20:31" } ]
+    };
+
+    let mevcutSayac = 0;
+    let aktifSehir = "Ankara";
+    let kibleAcisi = 145;
+    let userLat = 39.9334; 
+    let userLng = 32.8597; 
+    const KAABA_LAT = 21.4225;
+    const KAABA_LNG = 39.8262;
+
+    let map = null;
+    let userMarker = null;
+    let kaabaMarker = null;
+    let qiblaPolyline = null;
+
+    function yukle() {
+        const kayitli = localStorage.getItem("zikirSayac");
+        if (kayitli !== null) mevcutSayac = parseInt(kayitli);
+        zikirDegistir();
+        dualarıGoster();
+        esmaYukle(esmaListesi);
+        rastgeleMesneviSozu();
+    }
+
+    function sayfaDegistir(sayfaId, el) {
+        document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+        
+        document.getElementById('page-' + sayfaId).classList.add('active');
+        el.classList.add('active');
+
+        if(sayfaId === 'pusula') {
+            setTimeout(() => {
+                haritayiBaslat();
+                pusulaBaslat();
             }, 200);
         }
-    </script>
+    }
+
+    function zikirDegistir() {
+        const idx = document.getElementById("zikir-secim").value;
+        document.getElementById("zikir-anlam").innerText = "Anlamı: " + zikirler[idx].anlam;
+        guncelleUI();
+    }
+
+    function artir() {
+        const idx = document.getElementById("zikir-secim").value;
+        const hedef = zikirler[idx].hedef;
+        mevcutSayac++;
+        localStorage.setItem("zikirSayac", mevcutSayac);
+        if (navigator.vibrate) navigator.vibrate(40);
+
+        if (mevcutSayac === hedef) {
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            alert("Tebrikler! " + zikirler[idx].isim + " hedefine ulaştınız.");
+        }
+        guncelleUI();
+    }
+
+    function sifirla() {
+        if (confirm("Sayacı sıfırlamak istiyor musunuz?")) {
+            mevcutSayac = 0;
+            localStorage.setItem("zikirSayac", mevcutSayac);
+            guncelleUI();
+        }
+    }
+
+    function guncelleUI() {
+        const idx = document.getElementById("zikir-secim").value;
+        const hedef = zikirler[idx].hedef;
+        document.getElementById("sayac").innerText = mevcutSayac + " / " + hedef;
+        let oran = (mevcutSayac / hedef) * 100;
+        document.getElementById("ilerleme-cubugu").style.width = Math.min(oran, 100) + "%";
+    }
+
+    function esmaYukle(liste) {
+        let html = "";
+        liste.forEach(item => {
+            html += `<div class="list-item">
+                        <div class="item-header">
+                            <span class="item-title">${item.isim}</span>
+                            <span class="item-no">#${item.no}</span>
+                        </div>
+                        <div class="meaning">${item.anlam}</div>
+                     </div>`;
+        });
+        document.getElementById("esma-listesi").innerHTML = html;
+    }
+
+    function esmaFiltrele() {
+        const q = document.getElementById("esma-ara").value.toLowerCase();
+        const filtrelenmis = esmaListesi.filter(e => 
+            e.isim.toLowerCase().includes(q) || e.anlam.toLowerCase().includes(q) || e.no.toString() === q
+        );
+        esmaYukle(filtrelenmis);
+    }
+
+    function dualarıGoster() {
+        const vakit = document.getElementById("vakit-duasi-secim").value;
+        const liste = namazDualari[vakit];
+        let html = "";
+        liste.forEach(d => {
+            html += `<div class="list-item">
+                        <div class="item-title">${d.isim}</div>
+                        ${d.arapca ? `<div class="arabic-text">${d.arapca}</div>` : ''}
+                        <div style="font-size:14px; margin-top:6px; line-height: 1.5;"><b>Okunuş:</b> ${d.okunus}</div>
+                        <div class="meaning" style="margin-top:6px;"><b>Anlamı:</b> ${d.anlam}</div>
+                     </div>`;
+        });
+        document.getElementById("dua-listesi").innerHTML = html;
+    }
+
+    function rastgeleMesneviSozu() {
+        const idx = Math.floor(Math.random() * mesneviSozleri.length);
+        document.getElementById("mesnevi-soz").innerText = `"${mesneviSozleri[idx]}" — Mevlânâ`;
+    }
+
+    function sehirDegistir() {
+        aktifSehir = document.getElementById("sehir-secim").value;
+        vakitGuncelle();
+    }
+
+    function vakitGuncelle() {
+        const simdi = new Date();
+        let vakitler = sehirVakitleri[aktifSehir] || sehirVakitleri["Ankara"];
+        let hedefZaman = null;
+        let sonrakiVakit = "";
+
+        for (let v of vakitler) {
+            let [h, m] = v.saat.split(":").map(Number);
+            let t = new Date(simdi.getFullYear(), simdi.getMonth(), simdi.getDate(), h, m, 0);
+            if (t > simdi) {
+                sonrakiVakit = v.isim;
+                hedefZaman = t;
+                break;
+            }
+        }
+
+        if (!hedefZaman) {
+            let [h, m] = vakitler[0].saat.split(":").map(Number);
+            hedefZaman = new Date(simdi.getFullYear(), simdi.getMonth(), simdi.getDate() + 1, h, m, 0);
+            sonrakiVakit = vakitler[0].isim;
+        }
+
+        let fark = hedefZaman - simdi;
+        let s = Math.floor(fark / 1000) % 60;
+        let m = Math.floor(fark / (1000 * 60)) % 60;
+        let h = Math.floor(fark / (1000 * 60 * 60));
+
+        document.getElementById("vakit-baslik").innerText = aktifSehir + " - " + sonrakiVakit + " Vaktine Kalan:";
+        document.getElementById("vakit-saat").innerText = 
+            (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+    }
+
+    /* PUSULA SENSÖR YÖNETİMİ */
+    function pusulaBaslat() {
+        konumuBulVeHaritayaIsle();
+
+        if (window.DeviceOrientationEvent) {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener('deviceorientation', pusulaYonlendir, true);
+                        } else {
+                            alert("Pusula sensörü için izin verilmedi.");
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('deviceorientation', pusulaYonlendir, true);
+            }
+        } else {
+            alert("Cihazınızda jiroskop / pusula sensörü tespit edilemedi.");
+        }
+    }
+
+    function pusulaYonlendir(e) {
+        let heading = null;
+        if (e.webkitCompassHeading) {
+            heading = e.webkitCompassHeading; // iOS için
+        } else if (e.alpha !== null) {
+            heading = 360 - e.alpha; // Android Chrome için
+        }
+
+        if (heading !== null) {
+            document.getElementById("pusula-disk").style.transform = `rotate(${-heading}deg)`;
+            document.getElementById("kible-isaret").style.transform = `rotate(${kibleAcisi}deg)`;
+        }
+    }
+
+    function hesaplaKibleAcisi(lat, lng) {
+        const phi1 = lat * Math.PI / 180;
+        const phi2 = KAABA_LAT * Math.PI / 180;
+        const lam1 = lng * Math.PI / 180;
+        const lam2 = KAABA_LNG * Math.PI / 180;
+
+        const y = Math.sin(lam2 - lam1);
+        const x = Math.cos(phi1) * Math.tan(phi2) - Math.sin(phi1) * Math.cos(lam2 - lam1);
+        let qibla = Math.atan2(y, x) * 180 / Math.PI;
+        return (qibla + 360) % 360;
+    }
+
+    /* HARİTA VE CANLI KIBLE ÇİZGİSİ */
+    function haritayiBaslat() {
+        if (!map) {
+            map = L.map('map').setView([userLat, userLng], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            kaabaMarker = L.marker([KAABA_LAT, KAABA_LNG]).addTo(map).bindPopup("🕋 Kâbe (Mekke)");
+        } else {
+            map.invalidateSize();
+        }
+    }
+
+    function konumuBulVeHaritayaIsle() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                userLat = pos.coords.latitude;
+                userLng = pos.coords.longitude;
+
+                kibleAcisi = hesaplaKibleAcisi(userLat, userLng);
+                document.getElementById("kible-acisi-txt").innerText = Math.round(kibleAcisi) + "°";
+
+                if (map) {
+                    if (userMarker) map.removeLayer(userMarker);
+                    if (qiblaPolyline) map.removeLayer(qiblaPolyline);
+
+                    userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup("📍 Konumunuz").openPopup();
+                    
+                    // Canlı Kıble Çizgisi (Kırmızı / Altın rengi hat)
+                    qiblaPolyline = L.polyline([[userLat, userLng], [KAABA_LAT, KAABA_LNG]], {
+                        color: '#f59e0b',
+                        weight: 4,
+                        dashArray: '8, 8'
+                    }).addTo(map);
+
+                    const bounds = L.latLngBounds([[userLat, userLng], [KAABA_LAT, KAABA_LNG]]);
+                    map.fitBounds(bounds, { padding: [30, 30] });
+                }
+            }, err => {
+                document.getElementById("kible-acisi-txt").innerText = "~145° (Varsayılan)";
+            });
+        }
+    }
+
+    yukle();
+    setInterval(vakitGuncelle, 1000);
+    vakitGuncelle();
+</script>
 </body>
-</html>
+                                                                                                      </html>
