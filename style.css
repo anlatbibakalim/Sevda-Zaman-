@@ -1,0 +1,748 @@
+:root {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-color: #f8fafc;
+    --accent-color: #10b981;
+    --gold: #dfb15b;
+    --border-color: #334155;
+    --muted: #94a3b8;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+button { touch-action: manipulation; }
+
+:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    padding: 15px;
+}
+
+.header {
+    text-align: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 15px;
+}
+
+.header h1 {
+    color: var(--gold);
+    font-size: 1.5rem;
+}
+
+.header-date {
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+/* Bugün Bayram Banner */
+.today-banner {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: white;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    display: none;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .today-banner { animation: none; }
+    html { scroll-behavior: auto; }
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.note {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.4;
+    margin-top: 10px;
+}
+
+/* Namaz vakitleri */
+.vakit-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.vakit-toolbar .search-box {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.icon-btn {
+    background: var(--bg-color);
+    color: var(--gold);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.icon-btn:active { transform: scale(0.95); }
+
+.vakit-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    text-align: center;
+    font-size: 0.78rem;
+}
+
+.vakit-cell {
+    padding: 8px 2px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: background 0.3s;
+}
+
+.vakit-cell strong { font-size: 0.9rem; }
+
+.vakit-cell.aktif {
+    background: rgba(223, 177, 91, 0.15);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.sonraki-vakit {
+    margin-top: 12px;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.9rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 8px;
+}
+
+.sonraki-vakit b { color: var(--accent-color); }
+
+.vakit-durum {
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+/* Profesyonel Animasyonlu Zikirmatik */
+.zikir-display {
+    text-align: center;
+    padding: 25px 15px;
+    background: radial-gradient(circle at center, #233348 0%, var(--card-bg) 80%);
+    border: 2px solid rgba(223, 177, 91, 0.3);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.zikir-screen {
+    background: rgba(15, 23, 42, 0.85);
+    border: 2px solid var(--gold);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 14px;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 0 15px rgba(223, 177, 91, 0.15);
+}
+
+.zikir-count {
+    font-size: 4.2rem;
+    font-weight: 800;
+    color: var(--accent-color);
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    letter-spacing: 2px;
+    transition: transform 0.1s ease;
+}
+
+.zikir-count.anim {
+    transform: scale(1.1);
+}
+
+.zikir-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 6px;
+}
+
+.zikir-stats b { color: var(--gold); }
+
+.progress {
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--accent-color), var(--gold));
+    transition: width 0.15s ease;
+}
+
+.zikir-msg {
+    min-height: 18px;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.hedef-chips {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.chip {
+    background: var(--bg-color);
+    color: var(--muted);
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.chip.active {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
+    font-weight: bold;
+}
+
+.zikir-btn-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.zikir-main-btn {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), #b8860b);
+    border: 5px solid #fff;
+    color: #0f172a;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(223, 177, 91, 0.4), 0 4px 6px rgba(0,0,0,0.3);
+    transition: all 0.1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.zikir-main-btn:active {
+    transform: scale(0.92);
+    box-shadow: 0 2px 10px rgba(223, 177, 91, 0.4);
+}
+
+.btn {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-reset {
+    background-color: #ef4444;
+    margin-top: 8px;
+}
+
+.btn-secondary {
+    background-color: var(--border-color);
+}
+
+.btn-row {
+    display: flex;
+    gap: 8px;
+}
+
+.search-box {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 20px 0;
+    font-size: 0.9rem;
+}
+
+/* Vakit / Dua Tab Butonları */
+.vakit-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.vakit-tab {
+    background: var(--bg-color);
+    color: var(--muted);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    flex: 1;
+    text-align: center;
+}
+
+.vakit-tab.active {
+    background: var(--gold);
+    color: #000;
+    font-weight: bold;
+    border-color: var(--gold);
+}
+
+.item-card {
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 0;
+}
+
+.item-card:last-child {
+    border-bottom: none;
+}
+
+.arabic-text {
+    font-size: 1.4rem;
+    text-align: right;
+    direction: rtl;
+    color: var(--gold);
+    margin: 6px 0;
+    line-height: 1.9;
+    font-family: 'Traditional Arabic', 'Amiri', serif;
+}
+
+.transcription {
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+
+.meaning {
+    font-size: 0.95rem;
+}
+
+/* Kur'an Stilleri */
+.kuran-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.kuran-title {
+    font-weight: bold;
+    color: var(--gold);
+    margin-bottom: 8px;
+}
+
+.kuran-audio {
+    width: 100%;
+    height: 36px;
+    outline: none;
+}
+
+.audio-hata {
+    display: none;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: #f87171;
+}
+
+/* Pusula Kullanım Rehberi Kutusu */
+.compass-guide {
+    background: rgba(223, 177, 91, 0.1);
+    border: 1px dashed var(--gold);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.compass-guide ul {
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+/* Pusula Stili */
+.compass-wrapper {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: 20px auto;
+}
+
+.compass-face {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+    border: 4px solid var(--gold);
+    box-shadow: 0 0 15px rgba(223, 177, 91, 0.3), inset 0 0 15px rgba(0,0,0,0.5);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s cubic-bezier(0.1, 0.1, 0.1, 1);
+}
+
+.compass-direction {
+    position: absolute;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--gold);
+}
+
+.compass-n { top: 8px; color: #ef4444; }
+.compass-e { right: 12px; }
+.compass-s { bottom: 8px; }
+.compass-w { left: 12px; }
+
+.compass-center-kaaba {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    top: calc(50% - 16px);
+    left: calc(50% - 16px);
+    z-index: 11;
+    background: #000;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.compass-pointer {
+    position: absolute;
+    width: 36px;
+    height: 180px;
+    top: 30px;
+    left: calc(50% - 18px);
+    z-index: 12;
+    transition: transform 0.3s ease-out;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pointer-head-kaaba {
+    width: 32px;
+    height: 32px;
+    background: #000;
+    border: 2px solid var(--gold);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.9);
+}
+
+.pointer-line-north {
+    width: 4px;
+    height: 55px;
+    background: linear-gradient(to top, var(--gold), var(--accent-color));
+}
+
+.pointer-line-south {
+    width: 4px;
+    height: 55px;
+    background: #64748b;
+}
+
+.pointer-tail {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 12px solid #64748b;
+}
+
+.kible-durum {
+    margin: 6px 0 12px 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    min-height: 18px;
+}
+
+.kible-durum.ok { color: var(--accent-color); font-weight: bold; }
+
+#map {
+    height: 230px;
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+/* Video bağlantı kartları (YouTube gömme yerine) */
+.video-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 14px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(223, 177, 91, 0.15), rgba(15, 23, 42, 0.9));
+    border: 1px solid var(--gold);
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.video-link:active {
+    transform: scale(0.98);
+}
+
+.video-play {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.video-link-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.9rem;
+}
+
+.video-link-text small {
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+/* Bayram / Dini günler */
+.bayram-hero {
+    background: linear-gradient(135deg, rgba(223, 177, 91, 0.15), rgba(30, 41, 59, 1));
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 20px 14px;
+    text-align: center;
+}
+
+.bayram-hero h2 {
+    font-size: 1.4rem;
+    color: var(--gold);
+    margin-top: 12px;
+}
+
+.tur-rozet {
+    display: inline-block;
+    font-size: 0.78rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+    color: var(--gold);
+}
+
+.countdown {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.cd-box {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 0;
+}
+
+.cd-box b {
+    display: block;
+    font-size: 1.5rem;
+    color: var(--accent-color);
+}
+
+.cd-box span {
+    font-size: 0.7rem;
+    color: var(--muted);
+}
+
+.yil-secici {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 16px 0 10px 0;
+}
+
+.yil-secici strong {
+    color: var(--gold);
+    font-size: 1.1rem;
+}
+
+.yil-secici .icon-btn {
+    padding: 6px 14px;
+}
+
+.olay-satir {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.olay-satir:last-child { border-bottom: none; }
+.olay-satir.gecmis { opacity: 0.45; }
+
+.olay-satir.bugun {
+    background: rgba(16, 185, 129, 0.12);
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.olay-ad { font-weight: bold; font-size: 0.92rem; }
+.olay-tarih { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+.olay-rozet {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.rozet-resmi { background: rgba(239, 68, 68, 0.18); color: #fca5a5; }
+.rozet-dini { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; }
+.rozet-kandil { background: rgba(223, 177, 91, 0.2); color: var(--gold); }
+
+/* Alt Navigasyon */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--card-bg);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--border-color);
+    z-index: 1000;
+    overflow-x: auto;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.7rem;
+    cursor: pointer;
+    min-width: 55px;
+    text-align: center;
+}
+
+.nav-item.active {
+    color: var(--gold);
+}
+
+.nav-icon {
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.page-section {
+    display: none;
+}
+
+.page-section.active {
+    display: block;
+}
