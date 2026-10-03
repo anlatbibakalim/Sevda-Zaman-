@@ -1,0 +1,20 @@
+{
+  "name": "Sevda Zamanı - Zikirmatik & İslami Rehber",
+  "short_name": "Sevda Zamanı",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090a0f",
+  "theme_color": "#064e3b",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2833/2833315.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2833/2833315.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
