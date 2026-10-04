@@ -746,3 +746,148 @@ button { touch-action: manipulation; }
 .page-section.active {
     display: block;
 }
+
+
+/* ===== Kur'an okuma modu ===== */
+.btn-row .chip { flex: 1; }
+.okuma-secimler { margin-top: 4px; }
+.okuma-secimler .search-box { margin-bottom: 8px; flex: 1; min-width: 0; }
+
+.devam-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin-top: 6px;
+    background: linear-gradient(135deg, #059669, #10b981);
+}
+.devam-btn small { font-weight: normal; font-size: 0.78rem; opacity: 0.9; }
+.devam-btn.yerimi { background: linear-gradient(135deg, #b8860b, var(--gold)); color: #0f172a; }
+
+.sayfa-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.sayfa-nav .icon-btn { padding: 8px 16px; font-size: 1.4rem; }
+.sayfa-bilgi { flex: 1; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.sayfa-bilgi strong { color: var(--gold); font-size: 1.05rem; }
+.sayfa-bilgi small { color: var(--muted); font-size: 0.75rem; }
+.cuz-gez { margin-bottom: 10px; }
+
+.okuma-ayar { display: flex; gap: 6px; align-items: stretch; margin-bottom: 6px; }
+.okuma-ayar .search-box { margin-bottom: 0; flex: 1; min-width: 0; padding: 8px 6px; font-size: 0.85rem; }
+.okuma-ayar .icon-btn { padding: 0 12px; font-size: 0.95rem; font-weight: bold; }
+
+#okuma-icerik { --ar-punto: 28px; --meal-punto: 16px; margin-top: 8px; }
+
+.okuma-ar {
+    font-family: 'Traditional Arabic', 'Amiri', 'Scheherazade New', serif;
+    direction: rtl;
+    text-align: right;
+    color: var(--gold);
+    font-size: var(--ar-punto);
+    line-height: 2.1;
+}
+#okuma-icerik .okuma-meal {
+    font-size: var(--meal-punto);
+    line-height: 1.55;
+    color: var(--text-color);
+    margin-top: 6px;
+}
+
+.ayet-kart {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+.ayet-kart.secili, .ayet-span.secili { background: rgba(223, 177, 91, 0.12); }
+.ayet-kart.calan, .ayet-span.calan {
+    background: rgba(16, 185, 129, 0.18);
+    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.5);
+}
+.ayet-ust { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.ayet-no {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    background: rgba(16, 185, 129, 0.12);
+    padding: 2px 10px;
+    border-radius: 12px;
+}
+.isaret { font-size: 0.72rem; color: var(--gold); }
+.isaret-mini { font-size: 0.7rem; }
+.ayet-son { color: var(--accent-color); font-size: 0.85em; }
+
+.mushaf-p { margin: 6px 0 10px 0; text-align: justify; text-align-last: right; }
+.ayet-span { border-radius: 6px; padding: 0 2px; cursor: pointer; }
+
+.sure-baslik {
+    text-align: center;
+    margin: 14px 0 8px 0;
+    padding: 12px 8px;
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(223, 177, 91, 0.15), rgba(15, 23, 42, 0.9));
+}
+.sure-tr { color: var(--gold); font-weight: bold; font-size: 1.05rem; }
+.sure-ar { font-family: 'Traditional Arabic', 'Amiri', serif; font-size: 1.5rem; color: var(--gold); margin: 2px 0; }
+.sure-alt { font-size: 0.75rem; color: var(--muted); }
+.bismillah { text-align: center; margin: 4px 0 8px 0; }
+
+/* Arama sonuçları */
+.arama-ozet { font-size: 0.78rem; color: var(--muted); margin: 6px 0; }
+.arama-satir {
+    padding: 10px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+}
+.arama-satir:active { background: rgba(223, 177, 91, 0.12); }
+.arama-ust { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
+.arama-ust small { color: var(--muted); font-weight: normal; }
+.arama-alt {
+    font-size: 0.85rem;
+    margin-top: 3px;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.arama-alt.ar { direction: rtl; text-align: right; font-family: 'Traditional Arabic', 'Amiri', serif; font-size: 1.15rem; color: var(--gold); }
+mark { background: rgba(223, 177, 91, 0.35); color: #fff; border-radius: 3px; padding: 0 2px; }
+
+/* Mini oynatıcı */
+.mini-player {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 20px);
+    max-width: 480px;
+    z-index: 900;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    background: var(--card-bg);
+    border: 1px solid var(--gold);
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+body.mini-acik { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+.mp-bilgi { text-align: center; font-size: 0.8rem; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mp-kontrol { display: flex; justify-content: space-around; align-items: center; }
+.mp-kontrol button {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    font-size: 1.05rem;
+    cursor: pointer;
+}
+.mp-kontrol button:active { transform: scale(0.92); }
+.mp-kontrol .mp-play { width: 50px; height: 50px; background: var(--gold); color: #0f172a; border-color: #fff; font-size: 1.25rem; }
+.mp-kontrol button.aktif { background: rgba(223, 177, 91, 0.3); border-color: var(--gold); }
+.mp-durum { text-align: center; font-size: 0.72rem; color: var(--muted); min-height: 14px; }

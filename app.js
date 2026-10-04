@@ -357,7 +357,7 @@ const esmaVeritabani = [
     { no: 14, isim: "El-Musavvir", arapca: "الْمُصَوِّرُ", anlam: "Varlıklara şekil ve suret veren." },
     { no: 15, isim: "El-Gaffâr", arapca: "الْغَفَّارُ", anlam: "Günahları örten ve çokça bağışlayan." },
     { no: 16, isim: "El-Kahhâr", arapca: "الْقَهَّارُ", anlam: "Her şeye galip gelen, mutlak hâkim." },
-    { no: 17, isim: "El-Vehhâب", arapca: "الْوَهَّابُ", anlam: "Karşılıksız bolca ihsan eden." },
+    { no: 17, isim: "El-Vehhâb", arapca: "الْوَهَّابُ", anlam: "Karşılıksız bolca ihsan eden." },
     { no: 18, isim: "Er-Razzâk", arapca: "الرَّزَّاقُ", anlam: "Bütün canlıların rızkını veren." },
     { no: 19, isim: "El-Fettâh", arapca: "الْفَتَّاحُ", anlam: "Her türlü müşkülü çözen, kapıları açan." },
     { no: 20, isim: "El-Alîm", arapca: "الْعَلِيمُ", anlam: "Her şeyi en ince ayrıntısıyla bilen." },
@@ -434,7 +434,7 @@ const esmaVeritabani = [
     { no: 91, isim: "Ed-Dârr", arapca: "الضَّارُّ", anlam: "Elem ve zarar veren şeyleri yaratan." },
     { no: 92, isim: "En-Nâfi", arapca: "النَّافِعُ", anlam: "Faydalı şeyleri yaratan." },
     { no: 93, isim: "En-Nûr", arapca: "النُّورُ", anlam: "Alemleri aydınlatan nur." },
-    { no: 94, isim: "El-Hâدî", arapca: "الْهَادِي", anlam: "Hidayet veren, doğru yola ileten." },
+    { no: 94, isim: "El-Hâdî", arapca: "الْهَادِي", anlam: "Hidayet veren, doğru yola ileten." },
     { no: 95, isim: "El-Bedî", arapca: "الْبَدِيعُ", anlam: "Örneksiz ve eşsiz harikalar yaratan." },
     { no: 96, isim: "El-Bâkî", arapca: "الْبَاقِي", anlam: "Varlığının sonu olmayan." },
     { no: 97, isim: "El-Vâris", arapca: "الْوَارِثُ", anlam: "Her şeyin asıl sahibi ve varisi." },
@@ -625,7 +625,7 @@ function sonrakiVakitGuncelle() {
 }
 
 // =====================================================
-// 6. KUR'AN DİNLETİSİ & EKLENEN YENİ FONKSİYONLAR
+// 6. KUR'AN DİNLETİSİ
 // =====================================================
 const hafizVerileri = {
     alafasy: { server: "https://server8.mp3quran.net/afs/", name: "Mishary Alafasy" },
@@ -684,67 +684,35 @@ function kuranListesiniGuncelle() {
     });
 }
 
-// İstediğiniz Özel Fonksiyon Entegrasyonları (`initQuran`, `loadPage`, `playAudio`, `handleSearch` vb.)
-function initQuran() {
-    kuranListesiniGuncelle();
-}
-
-function loadPage(pageId) {
-    const targetNav = document.querySelector(`.nav-item[data-page="${pageId}"]`) || document.querySelector(`.nav-item`);
-    if (targetNav) {
-        sayfaDegistir(pageId, targetNav);
-    }
-}
-
-function playAudio(audioElementId) {
-    const audioEl = document.getElementById(audioElementId);
-    if (audioEl) {
-        audioEl.play().catch(err => console.log("Oynatma hatası:", err));
-    }
-}
-
-function handleSearch(query, category = 'all') {
-    const q = norm(query);
-    if (category === 'dualar' || category === 'all') {
-        const duaInput = document.getElementById('dua-arama');
-        if (duaInput) {
-            duaInput.value = query;
-            duaFiltrele();
-        }
-    }
-    if (category === 'esma' || category === 'all') {
-        const esmaInput = document.getElementById('esma-arama');
-        if (esmaInput) {
-            esmaInput.value = query;
-            esmaFiltrele();
-        }
-    }
-}
-
 // Aynı anda yalnızca bir ses çalsın + hata mesajı
 (function kuranSesYonetimi() {
     const kap = document.getElementById('kuran-ses-listesi');
-    if (kap) {
-        kap.addEventListener('play', function (e) {
-            kap.querySelectorAll('audio').forEach(a => { if (a !== e.target) a.pause(); });
-            const hata = e.target.parentNode.querySelector('.audio-hata');
-            if (hata) hata.style.display = 'none';
-        }, true);
-        kap.addEventListener('error', function (e) {
-            if (e.target && e.target.tagName === 'SOURCE') {
-                const hata = e.target.parentNode.parentNode.querySelector('.audio-hata');
-                if (hata) hata.style.display = 'block';
-            }
-        }, true);
-    }
+    kap.addEventListener('play', function (e) {
+        kap.querySelectorAll('audio').forEach(a => { if (a !== e.target) a.pause(); });
+        if (typeof ayetSesiDurdur === 'function') ayetSesiDurdur();
+        const hata = e.target.parentNode.querySelector('.audio-hata');
+        if (hata) hata.style.display = 'none';
+    }, true);
+    kap.addEventListener('error', function (e) {
+        if (e.target && e.target.tagName === 'SOURCE') {
+            const hata = e.target.parentNode.parentNode.querySelector('.audio-hata');
+            if (hata) hata.style.display = 'block';
+        }
+    }, true);
 })();
 
 // =====================================================
 // 7. HİCRİ TAKVİM, RESMİ VE DİNİ GÜNLER (HER YILA UYGUN)
 // =====================================================
+
+// Diyanet takvimiyle fark görürseniz buradan tüm hesabı ±1 gün kaydırabilirsiniz (örn. 1 veya -1)
 const HICRI_GUN_KAYDIRMA = 0;
+
+// Belirli bir yılın tarihlerini elle düzeltmek isterseniz (YYYY-MM-DD).
+// Örnek: { "2027": { "Ramazan Bayramı": "2027-03-09" } }
 const MANUEL_TARIH_DUZELTME = {};
 
+// Tercihen Intl (Umm al-Qura); desteklenmezse tablolu hesap kullanılır
 let hicriFormatci = null;
 try {
     const f = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {
@@ -753,6 +721,7 @@ try {
     if (/islamic/.test(f.resolvedOptions().calendar)) hicriFormatci = f;
 } catch (e) { hicriFormatci = null; }
 
+// Tablolu (Kuveyt algoritması) yedek hesap
 function hicriTablolu(dt) {
     const jdn = Math.floor(dt.getTime() / 86400000) + 2440588;
     let l = jdn - 1948440 + 10632;
@@ -766,6 +735,7 @@ function hicriTablolu(dt) {
     return { y: y, m: m, d: d };
 }
 
+// dt: UTC 12:00'a ayarlı Date
 function hicriHesapla(dt) {
     const kayik = new Date(dt.getTime() + HICRI_GUN_KAYDIRMA * 86400000);
     if (hicriFormatci) {
@@ -784,6 +754,7 @@ function utcOgle(y, m, d) { return new Date(Date.UTC(y, m, d, 12, 0, 0)); }
 function gunEkle(dt, n) { return new Date(dt.getTime() + n * 86400000); }
 function isoDt(dt) { return dt.toISOString().slice(0, 10); }
 
+// Hicri (ay-gün) kuralları: her yıl otomatik bulunur
 const DINI_KURALLAR = {
     '1-1':   { ad: 'Hicri Yılbaşı',           tur: 'dini',   gun: 1 },
     '1-10':  { ad: 'Aşure Günü',              tur: 'dini',   gun: 1 },
@@ -796,6 +767,7 @@ const DINI_KURALLAR = {
     '12-10': { ad: 'Kurban Bayramı',          tur: 'dini',   gun: 4, arefe: 'Kurban Bayramı Arefesi' }
 };
 
+// Sabit tarihli resmi bayram ve tatiller
 const RESMI_GUNLER = [
     { ad: 'Yılbaşı', ay: 1, gun: 1 },
     { ad: 'Ulusal Egemenlik ve Çocuk Bayramı', ay: 4, gun: 23 },
@@ -813,11 +785,13 @@ function yilEtkinlikleri(yil) {
     if (olayCache[yil]) return olayCache[yil];
     const liste = [];
 
+    // Resmi günler
     RESMI_GUNLER.forEach(r => {
         const iso = yil + '-' + pad2(r.ay) + '-' + pad2(r.gun);
         liste.push({ ad: r.ad, bas: iso, bit: iso, tur: 'resmi' });
     });
 
+    // Dini günler: yılın her gününü hicri takvime çevirip kuralları ara
     const ilk = utcOgle(yil, 0, 1);
     for (let i = 0; i < 366; i++) {
         const dt = gunEkle(ilk, i);
@@ -835,6 +809,7 @@ function yilEtkinlikleri(yil) {
             }
         }
 
+        // Regaib Kandili: Recep ayının ilk Cuma gecesi (perşembe akşamı)
         if (h.m === 7 && h.d <= 7 && dt.getUTCDay() === 5) {
             const per = gunEkle(dt, -1);
             if (per.getUTCFullYear() === yil) {
@@ -844,6 +819,7 @@ function yilEtkinlikleri(yil) {
         }
     }
 
+    // Elle düzeltmeler
     const duz = MANUEL_TARIH_DUZELTME[yil];
     if (duz) {
         liste.forEach(o => {
@@ -889,7 +865,6 @@ function bayramBannerGuncelle() {
 
     const o = bugunku[0];
     const banner = document.getElementById('today-banner');
-    if (!banner) return;
     let mesaj;
     if (o.tur === 'resmi') mesaj = 'Resmi bayramınız kutlu olsun!';
     else if (o.tur === 'kandil') mesaj = 'Bu akşam kandil gecesi. Kandiliniz mübarek olsun.';
@@ -897,10 +872,8 @@ function bayramBannerGuncelle() {
     else if (o.ad.indexOf('Bayram') !== -1) mesaj = 'Bayramınız mübarek olsun.';
     else mesaj = 'Mübarek gününüz kutlu olsun.';
 
-    const titleEl = document.getElementById('today-title');
-    const descEl = document.getElementById('today-desc');
-    if (titleEl) titleEl.innerText = '🎉 Bugün ' + o.ad + '!';
-    if (descEl) descEl.innerText = mesaj;
+    document.getElementById('today-title').innerText = '🎉 Bugün ' + o.ad + '!';
+    document.getElementById('today-desc').innerText = mesaj;
     banner.style.display = 'block';
 }
 
@@ -957,12 +930,10 @@ let bayramYili = new Date().getFullYear();
 let bayramFiltre = 'hepsi';
 
 function bayramListesiCiz() {
-    const yilEl = document.getElementById('bayram-yil');
-    if (yilEl) yilEl.innerText = bayramYili;
+    document.getElementById('bayram-yil').innerText = bayramYili;
     const bugun = bugunIso();
     const liste = yilEtkinlikleri(bayramYili).filter(o => bayramFiltre === 'hepsi' || o.tur === bayramFiltre);
     const kap = document.getElementById('bayram-listesi');
-    if (!kap) return;
 
     if (!liste.length) {
         kap.innerHTML = '<div class="empty-state">Kayıt yok.</div>';
@@ -1017,15 +988,13 @@ const meccaLng = 39.8262;
 let hedefKibleAci = 0;
 let kibleHazir = false;
 let pusulaAktif = false;
-let pusulaDonus = 0;
+let pusulaDonus = 0;      // sürekli (sarmayan) açı: ani 360° dönüşleri önler
 let pusulaYonVar = false;
 let pusulaIlkOlcum = true;
 let kibleYonde = false;
 
 function haritaKur() {
     if (map || typeof L === 'undefined') return;
-    const mapEl = document.getElementById('map');
-    if (!mapEl) return;
     map = L.map('map').setView([39.9334, 32.8597], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
@@ -1036,7 +1005,6 @@ function haritaKur() {
 
 function kibleDurumYaz(metin, ok) {
     const el = document.getElementById('kible-durum');
-    if (!el) return;
     el.innerText = metin || '';
     el.classList.toggle('ok', !!ok);
 }
@@ -1063,18 +1031,15 @@ function konumuUygula(lat, lng, varsayilan) {
 
     hedefKibleAci = kibleAcisiHesapla(lat, lng);
     kibleHazir = true;
-    const aciEl = document.getElementById('kible-acisi');
-    const mesafeEl = document.getElementById('kible-mesafe');
-    if (aciEl) aciEl.innerText = 'Kıble Açınız: ' + hedefKibleAci.toFixed(1) + '°';
-    if (mesafeEl) mesafeEl.innerText =
+    document.getElementById('kible-acisi').innerText = 'Kıble Açınız: ' + hedefKibleAci.toFixed(1) + '°';
+    document.getElementById('kible-mesafe').innerText =
         'Kâbe\'ye yaklaşık uzaklık: ' + Math.round(mesafeKm(lat, lng)).toLocaleString('tr-TR') + ' km' +
         (varsayilan ? ' (konum izni verilmediği için Ankara baz alındı)' : '');
     pusulaCiz();
 }
 
 function kibleKonumAl() {
-    const aciEl = document.getElementById('kible-acisi');
-    if (aciEl) aciEl.innerText = 'Konum alınıyor...';
+    document.getElementById('kible-acisi').innerText = 'Konum alınıyor...';
     if (!navigator.geolocation) {
         konumuUygula(39.9334, 32.8597, true);
         return;
@@ -1097,9 +1062,9 @@ function pusulaCiz() {
 function pusulaOlayi(e) {
     let yon = null;
     if (typeof e.webkitCompassHeading === 'number') {
-        yon = e.webkitCompassHeading;
+        yon = e.webkitCompassHeading;                 // iOS: kuzeyden saat yönünde
     } else if (e.alpha !== null && e.alpha !== undefined && (e.absolute === true || e.type === 'deviceorientationabsolute')) {
-        yon = (360 - e.alpha) % 360;
+        yon = (360 - e.alpha) % 360;                  // Android: alpha saat yönünün tersi
     }
     if (yon === null) return;
 
@@ -1107,6 +1072,7 @@ function pusulaOlayi(e) {
         pusulaDonus = yon;
         pusulaIlkOlcum = false;
     } else {
+        // En kısa yoldan, yumuşatarak dön
         let delta = ((yon - (pusulaDonus % 360)) + 540) % 360 - 180;
         pusulaDonus += delta * 0.3;
     }
@@ -1143,6 +1109,7 @@ function pusulaBaslat() {
         kibleDurumYaz('Cihazınız yön sensörünü desteklemiyor.');
         return;
     }
+    // iOS 13+ izin ister
     if (typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission().then(r => {
             if (r === 'granted') pusulaDinlemeyiBaslat();
@@ -1171,10 +1138,927 @@ function kibleSayfasiAcildi() {
     if (!kibleHazir) kibleKonumAl();
     if (typeof DeviceOrientationEvent !== 'undefined' &&
         typeof DeviceOrientationEvent.requestPermission !== 'function') {
-        pusulaDinlemeyiBaslat();
+        pusulaDinlemeyiBaslat(); // Android: izin gerekmez
     } else if (!pusulaAktif) {
         kibleDurumYaz('Pusulayı etkinleştirmek için "Pusulayı Başlat" düğmesine dokunun.');
     }
+}
+
+// =====================================================
+// 8B. KUR'AN-I KERİM OKUMA MODU (SAYFA / CÜZ, ARAMA, YER İMİ, AYET SESİ)
+// Veri: Al Quran Cloud (quran-uthmani + Türkçe meal). Bir kez indirilir, cihazda saklanır.
+// =====================================================
+
+const SURE_ADLARI = ["Fâtiha","Bakara","Âl-i İmrân","Nisâ","Mâide","En'âm","A'râf","Enfâl","Tevbe","Yûnus","Hûd","Yûsuf","Ra'd","İbrâhîm","Hicr","Nahl","İsrâ","Kehf","Meryem","Tâhâ","Enbiyâ","Hac","Mü'minûn","Nûr","Furkân","Şuarâ","Neml","Kasas","Ankebût","Rûm","Lokmân","Secde","Ahzâb","Sebe'","Fâtır","Yâsîn","Sâffât","Sâd","Zümer","Mü'min","Fussilet","Şûrâ","Zuhruf","Duhân","Câsiye","Ahkâf","Muhammed","Fetih","Hucurât","Kâf","Zâriyât","Tûr","Necm","Kamer","Rahmân","Vâkıa","Hadîd","Mücâdele","Haşr","Mümtehine","Saff","Cuma","Münâfikûn","Teğâbün","Talâk","Tahrîm","Mülk","Kalem","Hâkka","Meâric","Nûh","Cin","Müzzemmil","Müddessir","Kıyâme","İnsân","Mürselât","Nebe'","Nâziât","Abese","Tekvîr","İnfitâr","Mutaffifîn","İnşikak","Bürûc","Târık","A'lâ","Gâşiye","Fecr","Beled","Şems","Leyl","Duhâ","İnşirâh","Tîn","Alak","Kadir","Beyyine","Zilzâl","Âdiyât","Kâria","Tekâsür","Asr","Hümeze","Fîl","Kureyş","Mâûn","Kevser","Kâfirûn","Nasr","Tebbet","İhlâs","Felak","Nâs"];
+const SURE_AYET = [7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
+const TOPLAM_AYET = 6236;
+
+const KISAYOLLAR = [
+    { ad: "Âyetü'l-Kürsî (Bakara 255)", s: 2, a: 255, k: ['ayetel kursi', 'ayet el kursi', 'ayetul kursi', 'ayetelkursi', 'kursi'] },
+    { ad: "Âmene'r-Resûlü (Bakara 285)", s: 2, a: 285, k: ['amenerrasulu', 'amenerresulu', 'amene rasulu'] }
+];
+
+const KURAN_HAFIZLAR = [
+    { id: 'ar.alafasy', ad: 'Mishary Alafasy' },
+    { id: 'ar.abdulbasitmurattal', ad: 'Abdulbasit Abdussamed' },
+    { id: 'ar.mahermuaiqly', ad: 'Maher Al-Muaiqly' },
+    { id: 'ar.saoodshuraym', ad: 'Saud Al-Shuraim' },
+    { id: 'ar.abdurrahmaansudais', ad: 'Abdurrahman Es-Sudeys' },
+    { id: 'ar.husary', ad: 'Mahmud Halil el-Husarî' },
+    { id: 'ar.minshawi', ad: 'Muhammed Sıddık el-Minşâvî' },
+    { id: 'ar.shaatree', ad: 'Ebu Bekir eş-Şâtırî' },
+    { id: 'tr.vakfi-audio', ad: 'Türkçe meal sesi (Diyanet Vakfı)' }
+];
+const SES_BITRATELER = ['128', '64', '192'];
+
+// Eş anlamlı / yazım farkı olan sık aranan kelimeler (normalize edilmiş biçimde)
+const ARAMA_ESANLAM = {
+    'tevbe': ['tovbe', 'tevbe'],
+    'tovbe': ['tovbe', 'tevbe'],
+    'namaz': ['namaz', 'salat'],
+    'sabir': ['sabir', 'sabr'],
+    'sukur': ['sukur', 'sukr'],
+    'zekat': ['zekat', 'zekât'],
+    'oruc': ['oruc'],
+    'dua': ['dua', 'dilek'],
+    'cennet': ['cennet'],
+    'cehennem': ['cehennem']
+};
+
+const KV = {
+    ready: false, T: null, P: null, J: null, S: null, N: null, sm: null,
+    meal: {}, trN: {}, arN: null, pr: {}, jr: {}, sb: [], toplamSayfa: 604
+};
+
+let kSayfa = 1;
+let kSecili = -1;
+let kMod = lsGet('kuranMod', 'oku');
+let kMealId = lsGet('kuranMeal', 'tr.diyanet');
+let kHafiz = lsGet('kuranHafiz', 'ar.alafasy');
+let kArPunto = lsInt('kuranArPunto', 28);
+let kMealPunto = lsInt('kuranMealPunto', 16);
+let kuranHazirlaniyor = false;
+let aramaDurum = null;
+let aramaZamanlayici = null;
+
+const sesNesne = new Audio();
+const sesOnYukle = new Audio();
+sesOnYukle.preload = 'auto';
+let sesIdx = -1;
+let sesBitrateNo = 0;
+
+// ---------- Yardımcılar ----------
+function escHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Uzunluğu koruyan Türkçe normalleştirme (vurgulama için)
+function normL(s) {
+    return String(s).toLocaleLowerCase('tr').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ı/g, 'i');
+}
+
+function arNorm(s) {
+    return String(s).replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '')
+        .replace(/[\u0671\u0623\u0625\u0622]/g, '\u0627')
+        .replace(/\u0649/g, '\u064A');
+}
+
+function arapcaRakam(n) {
+    return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+}
+
+function sureAdi(n) { return SURE_ADLARI[n - 1] || ''; }
+
+function hafizAdi() {
+    const h = KURAN_HAFIZLAR.find(x => x.id === kHafiz);
+    return h ? h.ad : '';
+}
+
+// IndexedDB (büyük veriyi saklamak için; localStorage yetmez)
+function idbAc() {
+    return new Promise((res, rej) => {
+        if (!window.indexedDB) { rej(new Error('IndexedDB yok')); return; }
+        const r = indexedDB.open('islam-dunyasi', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('kv');
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+    });
+}
+async function idbGet(k) {
+    try {
+        const db = await idbAc();
+        return await new Promise((res, rej) => {
+            const t = db.transaction('kv', 'readonly').objectStore('kv').get(k);
+            t.onsuccess = () => res(t.result);
+            t.onerror = () => rej(t.error);
+        });
+    } catch (e) { return undefined; }
+}
+async function idbSet(k, v) {
+    try {
+        const db = await idbAc();
+        return await new Promise((res, rej) => {
+            const tx = db.transaction('kv', 'readwrite');
+            tx.objectStore('kv').put(v, k);
+            tx.oncomplete = () => res(true);
+            tx.onerror = () => rej(tx.error);
+        });
+    } catch (e) { return false; }
+}
+
+// ---------- Veri indirme ve hazırlama ----------
+async function kuranGetir(edisyon) {
+    const ctrl = new AbortController();
+    const zaman = setTimeout(() => ctrl.abort(), 90000);
+    try {
+        const res = await fetch('https://api.alquran.cloud/v1/quran/' + edisyon, { signal: ctrl.signal });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const j = await res.json();
+        if (!j || !j.data || !j.data.surahs) throw new Error('Beklenmeyen veri biçimi');
+        return j.data.surahs;
+    } finally {
+        clearTimeout(zaman);
+    }
+}
+
+function arapcaDiziyeCevir(surahs) {
+    const T = new Array(TOPLAM_AYET), P = new Array(TOPLAM_AYET), J = new Array(TOPLAM_AYET),
+        S = new Array(TOPLAM_AYET), N = new Array(TOPLAM_AYET), sm = [];
+    surahs.forEach(s => {
+        sm[s.number] = { ad: s.name, rev: s.revelationType, n: s.ayahs.length };
+        s.ayahs.forEach(a => {
+            const i = a.number - 1;
+            T[i] = a.text; P[i] = a.page; J[i] = a.juz; S[i] = s.number; N[i] = a.numberInSurah;
+        });
+    });
+    for (let i = 0; i < TOPLAM_AYET; i++) {
+        if (typeof T[i] !== 'string' || !P[i] || !J[i]) throw new Error('Eksik ayet verisi (' + (i + 1) + ')');
+    }
+    return { T: T, P: P, J: J, S: S, N: N, sm: sm };
+}
+
+function mealDiziyeCevir(surahs) {
+    const M = new Array(TOPLAM_AYET);
+    surahs.forEach(s => s.ayahs.forEach(a => { M[a.number - 1] = a.text; }));
+    for (let i = 0; i < TOPLAM_AYET; i++) {
+        if (typeof M[i] !== 'string') throw new Error('Eksik meal verisi (' + (i + 1) + ')');
+    }
+    return M;
+}
+
+function veriyiKur(ar, mealler) {
+    KV.T = ar.T; KV.P = ar.P; KV.J = ar.J; KV.S = ar.S; KV.N = ar.N; KV.sm = ar.sm;
+    KV.meal = mealler;
+    KV.pr = {}; KV.jr = {}; KV.sb = [];
+    let maks = 1;
+    for (let i = 0; i < TOPLAM_AYET; i++) {
+        const p = KV.P[i], j = KV.J[i], s = KV.S[i];
+        if (!KV.pr[p]) KV.pr[p] = [i, i]; else KV.pr[p][1] = i;
+        if (!KV.jr[j]) KV.jr[j] = [p, p]; else { if (p < KV.jr[j][0]) KV.jr[j][0] = p; if (p > KV.jr[j][1]) KV.jr[j][1] = p; }
+        if (KV.sb[s] === undefined) KV.sb[s] = i;
+        if (p > maks) maks = p;
+    }
+    KV.toplamSayfa = maks;
+    KV.ready = true;
+}
+
+function girisDurumYaz(metin, hata) {
+    const el = document.getElementById('indir-durum');
+    if (!el) return;
+    el.innerText = metin || '';
+    el.style.color = hata ? '#f87171' : 'var(--muted)';
+}
+
+async function kuranHazirla() {
+    if (KV.ready || kuranHazirlaniyor) return;
+    kuranHazirlaniyor = true;
+    try {
+        girisDurumYaz('Kayıtlı veriler kontrol ediliyor...');
+        const ar = await idbGet('kuran:ar:v1');
+        const tr = await idbGet('kuran:tr.diyanet:v1');
+        if (ar && tr && ar.T && ar.T.length === TOPLAM_AYET && tr.length === TOPLAM_AYET) {
+            const mealler = { 'tr.diyanet': tr };
+            const yz = await idbGet('kuran:tr.yazir:v1');
+            if (yz && yz.length === TOPLAM_AYET) mealler['tr.yazir'] = yz;
+            veriyiKur(ar, mealler);
+            if (kMealId !== 'kapali' && !KV.meal[kMealId]) kMealId = 'tr.diyanet';
+            kuranEkranGoster();
+        } else {
+            girisDurumYaz('');
+            document.getElementById('okuma-giris').style.display = 'block';
+            document.getElementById('okuma-ana').style.display = 'none';
+        }
+    } finally {
+        kuranHazirlaniyor = false;
+    }
+}
+
+async function kuranVerisiniIndir() {
+    const btn = document.getElementById('indir-btn');
+    btn.disabled = true;
+    try {
+        girisDurumYaz('1/2 Arapça metin indiriliyor... (birkaç saniye sürebilir)');
+        const ar = arapcaDiziyeCevir(await kuranGetir('quran-uthmani'));
+        girisDurumYaz('2/2 Türkçe meal indiriliyor...');
+        const tr = mealDiziyeCevir(await kuranGetir('tr.diyanet'));
+        await idbSet('kuran:ar:v1', ar);
+        await idbSet('kuran:tr.diyanet:v1', tr);
+        veriyiKur(ar, { 'tr.diyanet': tr });
+        if (kMealId !== 'kapali' && !KV.meal[kMealId]) kMealId = 'tr.diyanet';
+        girisDurumYaz('');
+        kuranEkranGoster();
+    } catch (e) {
+        console.error(e);
+        girisDurumYaz('İndirme başarısız: ' + e.message + '. Bağlantınızı kontrol edip tekrar deneyin.', true);
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// ---------- Ekran kurulumu ----------
+function kuranSeceneklerDoldur() {
+    const sureSel = document.getElementById('sure-secim');
+    if (sureSel && !sureSel.options.length) {
+        sureSel.innerHTML = SURE_ADLARI.map((a, i) => '<option value="' + (i + 1) + '">' + (i + 1) + '. ' + a + '</option>').join('');
+    }
+    const cuzSel = document.getElementById('cuz-secim');
+    if (cuzSel && !cuzSel.options.length) {
+        let h = '';
+        for (let j = 1; j <= 30; j++) h += '<option value="' + j + '">' + j + '. Cüz</option>';
+        cuzSel.innerHTML = h;
+    }
+    const hafizSel = document.getElementById('okuma-hafiz');
+    if (hafizSel && !hafizSel.options.length) {
+        hafizSel.innerHTML = KURAN_HAFIZLAR.map(h => '<option value="' + h.id + '">' + h.ad + '</option>').join('');
+    }
+    if (hafizSel) {
+        if (!KURAN_HAFIZLAR.some(h => h.id === kHafiz)) kHafiz = 'ar.alafasy';
+        hafizSel.value = kHafiz;
+    }
+    const mealSel = document.getElementById('meal-secim');
+    if (mealSel) mealSel.value = kMealId;
+}
+
+function kuranEkranGoster() {
+    document.getElementById('okuma-giris').style.display = 'none';
+    document.getElementById('okuma-ana').style.display = 'block';
+    kuranSeceneklerDoldur();
+    const son = lsJSON('kuranSon');
+    if (son && son.i >= 0 && son.i < TOPLAM_AYET) kuranGit(KV.P[son.i], son.i, { kaydir: false });
+    else kuranGit(1);
+    devamGuncelle();
+    miniGoster();
+}
+
+function kuranBaslangic() {
+    kuranSeceneklerDoldur();
+    kuranModUygula();
+}
+
+function kuranSayfasiAcildi() {
+    kuranModUygula();
+    if (kMod === 'oku') kuranHazirla();
+    miniGoster();
+}
+
+// ---------- Oku / Dinle sekmeleri ----------
+function kuranModDegistir(mod) {
+    kMod = mod;
+    lsSet('kuranMod', mod);
+    kuranModUygula();
+    if (mod === 'oku') kuranHazirla();
+    miniGoster();
+}
+
+function kuranModUygula() {
+    const oku = document.getElementById('kuran-mod-oku');
+    const dinle = document.getElementById('kuran-mod-dinle');
+    if (!oku || !dinle) return;
+    oku.style.display = kMod === 'oku' ? 'block' : 'none';
+    dinle.style.display = kMod === 'dinle' ? 'block' : 'none';
+    document.querySelectorAll('#kuran-mod-tabs .vakit-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.mod === kMod);
+    });
+}
+
+// ---------- Ayet metni ----------
+function ayetArapca(i) {
+    let t = KV.T[i];
+    if (KV.N[i] === 1 && KV.S[i] !== 1 && KV.S[i] !== 9) {
+        const bt = KV.T[0].split(' ');
+        const w = t.split(' ');
+        if (w.length > bt.length && arNorm(w[0]) === arNorm(bt[0])) t = w.slice(bt.length).join(' ');
+    }
+    return t;
+}
+
+function mealAktifMi() {
+    return kMealId !== 'kapali' && !!KV.meal[kMealId];
+}
+
+// ---------- Sayfa çizimi ----------
+function kuranGit(p, idx, secenek) {
+    if (!KV.ready) return;
+    p = Math.max(1, Math.min(KV.toplamSayfa, parseInt(p, 10) || 1));
+    kSayfa = p;
+    const ilk = KV.pr[p][0];
+    kSecili = (idx !== undefined && idx >= KV.pr[p][0] && idx <= KV.pr[p][1]) ? idx : ilk;
+    sayfaCiz();
+    sonKaydet(kSecili);
+    const kaydir = !(secenek && secenek.kaydir === false);
+    if (idx !== undefined && kaydir) {
+        gorunturYap(kSecili);
+    } else if (kaydir) {
+        const kart = document.getElementById('okuma-sayfa-kart');
+        if (kart) kart.scrollIntoView({ block: 'start' });
+    }
+}
+
+function sayfaCiz() {
+    const p = kSayfa;
+    const aralik = KV.pr[p];
+    const a = aralik[0], b = aralik[1];
+    const meal = mealAktifMi() ? KV.meal[kMealId] : null;
+    const yerimi = lsJSON('kuranYerimi');
+    const yerimiIdx = yerimi ? yerimi.i : -1;
+    let html = '';
+
+    if (meal) {
+        for (let i = a; i <= b; i++) {
+            html += sureBasligiHtml(i);
+            html += '<div class="ayet-kart" data-i="' + i + '" onclick="kuranSec(' + i + ')">' +
+                '<div class="ayet-ust"><span class="ayet-no">' + KV.S[i] + ':' + KV.N[i] + '</span>' +
+                (i === yerimiIdx ? '<span class="isaret">📌 Yer imi</span>' : '') + '</div>' +
+                '<div class="okuma-ar">' + escHtml(ayetArapca(i)) + ' <span class="ayet-son">﴿' + arapcaRakam(KV.N[i]) + '﴾</span></div>' +
+                '<div class="okuma-meal">' + escHtml(meal[i]) + '</div></div>';
+        }
+    } else {
+        let acik = false;
+        for (let i = a; i <= b; i++) {
+            if (KV.N[i] === 1) {
+                if (acik) { html += '</p>'; acik = false; }
+                html += sureBasligiHtml(i);
+            }
+            if (!acik) { html += '<p class="mushaf-p okuma-ar">'; acik = true; }
+            html += '<span class="ayet-span" data-i="' + i + '" onclick="kuranSec(' + i + ')">' + escHtml(ayetArapca(i)) +
+                ' <span class="ayet-son">﴿' + arapcaRakam(KV.N[i]) + '﴾</span>' + (i === yerimiIdx ? '<span class="isaret-mini">📌</span>' : '') + '</span> ';
+        }
+        if (acik) html += '</p>';
+    }
+
+    const icerik = document.getElementById('okuma-icerik');
+    icerik.style.setProperty('--ar-punto', kArPunto + 'px');
+    icerik.style.setProperty('--meal-punto', kMealPunto + 'px');
+    icerik.innerHTML = html;
+
+    // Üst bilgi
+    const cuz = KV.J[a];
+    const cr = KV.jr[cuz];
+    const sureler = [];
+    for (let i = a; i <= b; i++) { if (sureler.indexOf(KV.S[i]) === -1) sureler.push(KV.S[i]); }
+    document.getElementById('okuma-sayfa-no').innerText = 'Sayfa ' + p + ' / ' + KV.toplamSayfa;
+    document.getElementById('okuma-sayfa-alt').innerText =
+        sureler.map(sureAdi).join(' · ') + ' • Cüz ' + cuz + ' (' + (p - cr[0] + 1) + '/' + (cr[1] - cr[0] + 1) + '. sayfa)';
+    document.getElementById('okuma-ilerleme-bar').style.width = (p / KV.toplamSayfa * 100) + '%';
+    document.getElementById('cuz-secim').value = cuz;
+    document.getElementById('sure-secim').value = KV.S[a];
+
+    kuranSecimiBoya();
+    if (sesIdx >= a && sesIdx <= b && !sesNesne.paused) calanIsaretle(sesIdx);
+    miniBilgiGuncelle();
+}
+
+function sureBasligiHtml(i) {
+    if (KV.N[i] !== 1) return '';
+    const s = KV.S[i];
+    const m = KV.sm[s] || {};
+    let h = '<div class="sure-baslik"><div class="sure-tr">' + s + '. ' + escHtml(sureAdi(s)) + ' Suresi</div>' +
+        '<div class="sure-ar">' + escHtml(m.ad || '') + '</div>' +
+        '<div class="sure-alt">' + SURE_AYET[s - 1] + ' ayet • ' + (m.rev === 'Meccan' ? 'Mekki' : 'Medeni') + '</div></div>';
+    if (s !== 1 && s !== 9) h += '<div class="bismillah okuma-ar">' + escHtml(KV.T[0]) + '</div>';
+    return h;
+}
+
+function kuranSecimiBoya() {
+    document.querySelectorAll('#okuma-icerik .secili').forEach(e => e.classList.remove('secili'));
+    if (kSecili >= 0) {
+        document.querySelectorAll('#okuma-icerik [data-i="' + kSecili + '"]').forEach(e => e.classList.add('secili'));
+    }
+}
+
+function kuranSec(i) {
+    kSecili = i;
+    kuranSecimiBoya();
+    miniBilgiGuncelle();
+}
+
+function gorunturYap(i) {
+    const el = document.querySelector('#okuma-icerik [data-i="' + i + '"]');
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+function calanIsaretle(i) {
+    document.querySelectorAll('#okuma-icerik .calan').forEach(e => e.classList.remove('calan'));
+    if (i >= 0) document.querySelectorAll('#okuma-icerik [data-i="' + i + '"]').forEach(e => e.classList.add('calan'));
+}
+
+// ---------- Gezinme ----------
+function sayfaGez(d) {
+    if (!KV.ready) return;
+    const hedef = kSayfa + d;
+    if (hedef < 1 || hedef > KV.toplamSayfa) return;
+    kuranGit(hedef);
+}
+
+function kuranCuzGit(j) {
+    j = parseInt(j, 10);
+    if (!KV.ready || !KV.jr[j]) return;
+    kuranGit(KV.jr[j][0]);
+}
+
+function cuzGez(d) {
+    if (!KV.ready) return;
+    const j = KV.J[KV.pr[kSayfa][0]] + d;
+    if (j < 1 || j > 30) return;
+    kuranCuzGit(j);
+}
+
+function kuranSureGit(n) {
+    n = parseInt(n, 10);
+    if (!KV.ready || KV.sb[n] === undefined) return;
+    const i = KV.sb[n];
+    kuranGit(KV.P[i], i);
+}
+
+function ayeteGit(s, a) {
+    const i = KV.sb[s] + a - 1;
+    kuranGit(KV.P[i], i);
+}
+
+// Parmakla kaydırma (sola = sonraki sayfa, sağa = önceki)
+(function kaydirmaKur() {
+    let x0 = 0, y0 = 0, izle = false;
+    document.addEventListener('touchstart', function (e) {
+        const hedef = e.target.closest ? e.target.closest('#okuma-icerik') : null;
+        izle = !!hedef && e.touches.length === 1;
+        if (izle) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }
+    }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+        if (!izle) return;
+        izle = false;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - x0, dy = t.clientY - y0;
+        if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) sayfaGez(dx < 0 ? 1 : -1);
+    }, { passive: true });
+})();
+
+// ---------- Kaldığım yer / yer imi ----------
+function sonKaydet(i) {
+    if (i < 0) return;
+    lsSet('kuranSon', JSON.stringify({ i: i, p: KV.P[i] }));
+    devamGuncelle();
+}
+
+function konumMetni(i) {
+    return sureAdi(KV.S[i]) + ' ' + KV.S[i] + ':' + KV.N[i] + ' • Sayfa ' + KV.P[i];
+}
+
+function devamGuncelle() {
+    const kap = document.getElementById('devam-alani');
+    if (!kap || !KV.ready) return;
+    const son = lsJSON('kuranSon');
+    const yer = lsJSON('kuranYerimi');
+    let h = '';
+    if (son && son.i >= 0 && son.i < TOPLAM_AYET) {
+        h += '<button class="btn devam-btn" onclick="kaldigimYereGit()">▶ Kaldığım yerden devam et<small>' + escHtml(konumMetni(son.i)) + '</small></button>';
+    }
+    if (yer && yer.i >= 0 && yer.i < TOPLAM_AYET) {
+        h += '<button class="btn devam-btn yerimi" onclick="yerimineGit()">📌 Yer imime git<small>' + escHtml(konumMetni(yer.i)) + '</small></button>';
+    }
+    kap.innerHTML = h;
+    const isaretBtn = document.getElementById('mp-isaret');
+    if (isaretBtn) isaretBtn.classList.toggle('aktif', !!yer && yer.i === kSecili);
+}
+
+function kaldigimYereGit() {
+    const son = lsJSON('kuranSon');
+    if (son) kuranGit(KV.P[son.i], son.i);
+}
+
+function yerimineGit() {
+    const yer = lsJSON('kuranYerimi');
+    if (yer) kuranGit(KV.P[yer.i], yer.i);
+}
+
+function ayetIsaretle() {
+    if (kSecili < 0) return;
+    const yer = lsJSON('kuranYerimi');
+    if (yer && yer.i === kSecili) {
+        lsRemove('kuranYerimi');
+        mpDurum('Yer imi kaldırıldı');
+    } else {
+        lsSet('kuranYerimi', JSON.stringify({ i: kSecili, p: KV.P[kSecili] }));
+        mpDurum('📌 Yer imi kaydedildi: ' + sureAdi(KV.S[kSecili]) + ' ' + KV.S[kSecili] + ':' + KV.N[kSecili]);
+    }
+    sayfaCiz();
+    devamGuncelle();
+}
+
+async function ayetKopyala() {
+    if (kSecili < 0) return;
+    const i = kSecili;
+    let metin = ayetArapca(i);
+    const m = KV.meal[mealAktifMi() ? kMealId : 'tr.diyanet'];
+    if (m) metin += '\n\n' + m[i];
+    metin += '\n— ' + sureAdi(KV.S[i]) + ' Suresi, ' + KV.N[i] + '. ayet (' + KV.S[i] + ':' + KV.N[i] + ')';
+    try {
+        await navigator.clipboard.writeText(metin);
+        mpDurum('📋 Ayet kopyalandı');
+    } catch (e) {
+        mpDurum('Kopyalanamadı');
+    }
+}
+
+// ---------- Yazı boyutu, meal, hafız ----------
+function kuranPunto(d) {
+    kArPunto = Math.max(20, Math.min(46, kArPunto + d * 2));
+    kMealPunto = Math.max(13, Math.min(26, kMealPunto + d));
+    lsSet('kuranArPunto', kArPunto);
+    lsSet('kuranMealPunto', kMealPunto);
+    const ic = document.getElementById('okuma-icerik');
+    ic.style.setProperty('--ar-punto', kArPunto + 'px');
+    ic.style.setProperty('--meal-punto', kMealPunto + 'px');
+}
+
+function okumaDurumYaz(metin, hata) {
+    const el = document.getElementById('okuma-durum');
+    if (!el) return;
+    el.innerText = metin || '';
+    el.style.color = hata ? '#f87171' : 'var(--muted)';
+}
+
+async function mealDegistir() {
+    const sel = document.getElementById('meal-secim');
+    const yeni = sel.value;
+    const eski = kMealId;
+    if (yeni === 'kapali' || KV.meal[yeni]) {
+        kMealId = yeni;
+        lsSet('kuranMeal', yeni);
+        if (KV.ready) sayfaCiz();
+        return;
+    }
+    // Seçilen meal ilk kez indirilecek
+    okumaDurumYaz('Meal indiriliyor...');
+    try {
+        const m = mealDiziyeCevir(await kuranGetir(yeni));
+        KV.meal[yeni] = m;
+        await idbSet('kuran:' + yeni + ':v1', m);
+        kMealId = yeni;
+        lsSet('kuranMeal', yeni);
+        okumaDurumYaz('');
+        sayfaCiz();
+    } catch (e) {
+        console.error(e);
+        sel.value = eski;
+        okumaDurumYaz('Bu meal şu an indirilemedi (' + e.message + '). Önceki meal korundu.', true);
+    }
+}
+
+function hafizDegistir() {
+    kHafiz = document.getElementById('okuma-hafiz').value;
+    lsSet('kuranHafiz', kHafiz);
+    sesBitrateNo = 0;
+    if (!sesNesne.paused && sesIdx >= 0) ayetCal(sesIdx);
+}
+
+// ---------- Ayet sesi ----------
+function ayetSesURL(i, bitrate) {
+    return 'https://cdn.islamic.network/quran/audio/' + bitrate + '/' + kHafiz + '/' + (i + 1) + '.mp3';
+}
+
+function sesYukle(i) {
+    sesNesne.src = ayetSesURL(i, SES_BITRATELER[sesBitrateNo]);
+    const pr = sesNesne.play();
+    if (pr && pr.catch) pr.catch(function () {});
+    calanIsaretle(i);
+    mediaSessionGuncelle(i);
+    if (i + 1 < TOPLAM_AYET) sesOnYukle.src = ayetSesURL(i + 1, SES_BITRATELER[0]);
+}
+
+function ayetCal(i) {
+    if (!KV.ready || i < 0 || i >= TOPLAM_AYET) return;
+    document.querySelectorAll('#kuran-ses-listesi audio').forEach(a => a.pause());
+    mpDurum('');
+    if (KV.P[i] !== kSayfa) {
+        kuranGit(KV.P[i], i);
+    } else {
+        kuranSec(i);
+        sonKaydet(i);
+        gorunturYap(i);
+    }
+    sesIdx = i;
+    sesBitrateNo = 0;
+    sesYukle(i);
+}
+
+function ayetOynatDurdur() {
+    if (!KV.ready || kSecili < 0) return;
+    if (!sesNesne.paused) { sesNesne.pause(); return; }
+    if (sesIdx === kSecili && sesNesne.src && !sesNesne.ended && sesNesne.readyState > 0) {
+        const pr = sesNesne.play();
+        if (pr && pr.catch) pr.catch(function () {});
+    } else {
+        ayetCal(kSecili);
+    }
+}
+
+function ayetGez(d) {
+    if (!KV.ready) return;
+    const hedef = (kSecili < 0 ? 0 : kSecili) + d;
+    if (hedef < 0 || hedef >= TOPLAM_AYET) return;
+    if (!sesNesne.paused) {
+        ayetCal(hedef);
+    } else if (KV.P[hedef] !== kSayfa) {
+        kuranGit(KV.P[hedef], hedef);
+    } else {
+        kuranSec(hedef);
+        sonKaydet(hedef);
+        gorunturYap(hedef);
+    }
+}
+function ayetOnceki() { ayetGez(-1); }
+function ayetSonraki() { ayetGez(1); }
+
+function ayetSesiDurdur() {
+    if (!sesNesne.paused) sesNesne.pause();
+}
+
+sesNesne.addEventListener('ended', function () {
+    if (sesIdx >= 0 && sesIdx < TOPLAM_AYET - 1) ayetCal(sesIdx + 1);
+    else { calanIsaretle(-1); miniGuncelle(); }
+});
+sesNesne.addEventListener('play', miniGuncelle);
+sesNesne.addEventListener('pause', miniGuncelle);
+sesNesne.addEventListener('error', function () {
+    if (sesIdx < 0) return;
+    if (sesBitrateNo < SES_BITRATELER.length - 1) {
+        sesBitrateNo++;
+        sesYukle(sesIdx);
+    } else {
+        calanIsaretle(-1);
+        mpDurum('Ses yüklenemedi. Bağlantınızı kontrol edin veya başka bir hafız seçin.');
+        miniGuncelle();
+    }
+});
+
+function mediaSessionGuncelle(i) {
+    if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+    try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: sureAdi(KV.S[i]) + ' ' + KV.S[i] + ':' + KV.N[i],
+            artist: hafizAdi(),
+            album: "Kur'an-ı Kerim"
+        });
+        navigator.mediaSession.setActionHandler('play', function () { sesNesne.play(); });
+        navigator.mediaSession.setActionHandler('pause', function () { sesNesne.pause(); });
+        navigator.mediaSession.setActionHandler('previoustrack', function () { ayetGez(-1); });
+        navigator.mediaSession.setActionHandler('nexttrack', function () { ayetGez(1); });
+    } catch (e) { /* desteklenmiyor */ }
+}
+
+// ---------- Mini oynatıcı ----------
+let mpZamanlayici = null;
+function mpDurum(metin) {
+    const el = document.getElementById('mp-durum');
+    if (!el) return;
+    el.innerText = metin || '';
+    clearTimeout(mpZamanlayici);
+    if (metin && metin.indexOf('Ses yüklenemedi') === -1) {
+        mpZamanlayici = setTimeout(function () { el.innerText = ''; }, 2500);
+    }
+}
+
+function miniBilgiGuncelle() {
+    const el = document.getElementById('mp-bilgi');
+    if (!el) return;
+    if (!KV.ready || kSecili < 0) { el.innerText = '—'; return; }
+    el.innerText = sureAdi(KV.S[kSecili]) + ' ' + KV.S[kSecili] + ':' + KV.N[kSecili] + ' • ' + hafizAdi();
+    const yer = lsJSON('kuranYerimi');
+    const b = document.getElementById('mp-isaret');
+    if (b) b.classList.toggle('aktif', !!yer && yer.i === kSecili);
+}
+
+function miniGuncelle() {
+    const b = document.getElementById('mp-play');
+    if (b) b.innerText = sesNesne.paused ? '▶' : '⏸';
+    miniGoster();
+}
+
+function miniGoster() {
+    const mp = document.getElementById('mini-player');
+    if (!mp) return;
+    const kuranAktif = document.getElementById('page-kuran').classList.contains('active') && kMod === 'oku';
+    const goster = KV.ready && (kuranAktif || !sesNesne.paused);
+    mp.style.display = goster ? 'flex' : 'none';
+    document.body.classList.toggle('mini-acik', goster);
+}
+
+// ---------- Arama (sure adı, ayet no, anahtar kelime) ----------
+function aramaGecikmeli() {
+    clearTimeout(aramaZamanlayici);
+    aramaZamanlayici = setTimeout(kuranAraYap, 350);
+}
+
+function aramaTemizle() {
+    document.getElementById('kuran-arama').value = '';
+    document.getElementById('kuran-arama-sonuc').innerHTML = '';
+    aramaDurum = null;
+}
+
+function aramaGit(s, a) {
+    aramaTemizle();
+    ayeteGit(s, a);
+}
+
+function aramaSayfaGit(p) {
+    aramaTemizle();
+    kuranGit(p);
+}
+
+function aramaCuzGit(j) {
+    aramaTemizle();
+    kuranCuzGit(j);
+}
+
+function aramaSatiri(onclick, ust, alt, ek) {
+    return '<div class="arama-satir" onclick="' + onclick + '"><div class="arama-ust">' + ust + '</div>' +
+        (alt ? '<div class="arama-alt' + (ek || '') + '">' + alt + '</div>' : '') + '</div>';
+}
+
+function kelimeVaryantlari(w) {
+    const v = [w];
+    if (ARAMA_ESANLAM[w]) ARAMA_ESANLAM[w].forEach(x => { if (v.indexOf(x) === -1) v.push(x); });
+    // sabır -> sabr gibi ünlü düşmesi
+    if (w.length > 3 && /[iuü][bcçdfgğhjklmnprsştvyz]$/.test(w)) {
+        const d = w.slice(0, -2) + w.slice(-1);
+        if (v.indexOf(d) === -1) v.push(d);
+    }
+    return v;
+}
+
+function aramaMealId() {
+    return (kMealId !== 'kapali' && KV.meal[kMealId]) ? kMealId : 'tr.diyanet';
+}
+
+function kelimeAra(q) {
+    const arap = /[\u0600-\u06FF]/.test(q);
+    let dizi, gruplar;
+    if (arap) {
+        if (!KV.arN) KV.arN = KV.T.map(arNorm);
+        dizi = KV.arN;
+        gruplar = arNorm(q).split(/\s+/).filter(w => w.length >= 2).map(w => [w]);
+    } else {
+        const ed = aramaMealId();
+        if (!KV.trN[ed]) KV.trN[ed] = KV.meal[ed].map(normL);
+        dizi = KV.trN[ed];
+        gruplar = normL(q).split(/\s+/).filter(w => w.length >= 2).map(kelimeVaryantlari);
+    }
+    if (!gruplar.length) return { sonuc: [], gruplar: gruplar, arap: arap };
+    const sonuc = [];
+    for (let i = 0; i < dizi.length; i++) {
+        const t = dizi[i];
+        let tamam = true;
+        for (let g = 0; g < gruplar.length; g++) {
+            let var_ = false;
+            for (let k = 0; k < gruplar[g].length; k++) {
+                if (t.indexOf(gruplar[g][k]) !== -1) { var_ = true; break; }
+            }
+            if (!var_) { tamam = false; break; }
+        }
+        if (tamam) sonuc.push(i);
+    }
+    return { sonuc: sonuc, gruplar: gruplar, arap: arap };
+}
+
+function vurgula(metin, gruplar) {
+    const n = normL(metin);
+    if (n.length !== metin.length) return escHtml(metin);
+    const aralik = [];
+    gruplar.forEach(g => g.forEach(v => {
+        let pos = 0, k;
+        while ((k = n.indexOf(v, pos)) > -1) { aralik.push([k, k + v.length]); pos = k + v.length; }
+    }));
+    if (!aralik.length) return escHtml(metin);
+    aralik.sort((x, y) => x[0] - y[0]);
+    const birlesik = [aralik[0].slice()];
+    for (let i = 1; i < aralik.length; i++) {
+        const son = birlesik[birlesik.length - 1];
+        if (aralik[i][0] <= son[1]) son[1] = Math.max(son[1], aralik[i][1]);
+        else birlesik.push(aralik[i].slice());
+    }
+    let h = '', c = 0;
+    birlesik.forEach(r => {
+        h += escHtml(metin.slice(c, r[0])) + '<mark>' + escHtml(metin.slice(r[0], r[1])) + '</mark>';
+        c = r[1];
+    });
+    return h + escHtml(metin.slice(c));
+}
+
+function kuranAraYap() {
+    const kap = document.getElementById('kuran-arama-sonuc');
+    const q = document.getElementById('kuran-arama').value.trim();
+    aramaDurum = null;
+    if (!q) { kap.innerHTML = ''; return; }
+    if (!KV.ready) { kap.innerHTML = '<div class="empty-state">Önce Kur\'an verisini indirin.</div>'; return; }
+
+    const nq = norm(q);
+    let h = '';
+
+    // 1) 2:255 / 2 255 / 2.255
+    let m = q.match(/^(\d{1,3})\s*[:.,\-\s]\s*(\d{1,3})$/);
+    if (m) {
+        const s = parseInt(m[1], 10), a = parseInt(m[2], 10);
+        if (s >= 1 && s <= 114 && a >= 1 && a <= SURE_AYET[s - 1]) {
+            const i = KV.sb[s] + a - 1;
+            h += aramaSatiri('aramaGit(' + s + ',' + a + ')', '➡ ' + escHtml(sureAdi(s)) + ' Suresi, ' + a + '. ayet',
+                'Sayfa ' + KV.P[i] + ' • Cüz ' + KV.J[i]);
+        } else {
+            h += '<div class="empty-state">Geçersiz ayet. ' + (s >= 1 && s <= 114 ? escHtml(sureAdi(s)) + ' suresi ' + SURE_AYET[s - 1] + ' ayettir.' : 'Sure numarası 1-114 olmalı.') + '</div>';
+        }
+        kap.innerHTML = h;
+        return;
+    }
+
+    // 2) yalnızca sayı: sure / sayfa / cüz
+    if (/^\d+$/.test(q)) {
+        const n = parseInt(q, 10);
+        if (n >= 1 && n <= 114) h += aramaSatiri('aramaGit(' + n + ',1)', '📖 ' + n + '. sure: ' + escHtml(sureAdi(n)), SURE_AYET[n - 1] + ' ayet');
+        if (n >= 1 && n <= KV.toplamSayfa) h += aramaSatiri('aramaSayfaGit(' + n + ')', '📄 ' + n + '. sayfa');
+        if (n >= 1 && n <= 30) h += aramaSatiri('aramaCuzGit(' + n + ')', '📚 ' + n + '. cüz');
+        kap.innerHTML = h || '<div class="empty-state">Sonuç bulunamadı.</div>';
+        return;
+    }
+
+    // 3) "sayfa 42", "cüz 3"
+    m = nq.match(/^(sayfa|cuz)\s*(\d+)$/);
+    if (m) {
+        const n = parseInt(m[2], 10);
+        if (m[1] === 'sayfa' && n >= 1 && n <= KV.toplamSayfa) h = aramaSatiri('aramaSayfaGit(' + n + ')', '📄 ' + n + '. sayfa');
+        else if (m[1] === 'cuz' && n >= 1 && n <= 30) h = aramaSatiri('aramaCuzGit(' + n + ')', '📚 ' + n + '. cüz');
+        kap.innerHTML = h || '<div class="empty-state">Sonuç bulunamadı.</div>';
+        return;
+    }
+
+    // 4) kısayollar (Ayetel Kürsi vb.)
+    KISAYOLLAR.forEach(k => {
+        if (k.k.some(x => nq === x || (nq.length >= 4 && x.indexOf(nq) !== -1))) {
+            h += aramaSatiri('aramaGit(' + k.s + ',' + k.a + ')', '⭐ ' + escHtml(k.ad), 'Sayfa ' + KV.P[KV.sb[k.s] + k.a - 1]);
+        }
+    });
+
+    // 5) sure adı
+    if (nq.length >= 2) {
+        SURE_ADLARI.forEach((ad, idx) => {
+            if (norm(ad).indexOf(nq) !== -1) {
+                h += aramaSatiri('aramaGit(' + (idx + 1) + ',1)', '📖 ' + (idx + 1) + '. ' + escHtml(ad) + ' Suresi',
+                    SURE_AYET[idx] + ' ayet • Sayfa ' + KV.P[KV.sb[idx + 1]]);
+            }
+        });
+    }
+
+    // 6) kelime araması (meal veya Arapça)
+    const r = kelimeAra(q);
+    aramaDurum = { sonuc: r.sonuc, gruplar: r.gruplar, arap: r.arap, limit: 30, onek: h };
+    aramaSonucCiz();
+}
+
+function aramaSonucCiz() {
+    const kap = document.getElementById('kuran-arama-sonuc');
+    const d = aramaDurum;
+    if (!d) return;
+    let h = d.onek;
+    const toplam = d.sonuc.length;
+    if (toplam) {
+        h += '<div class="arama-ozet">' + toplam + ' ayette bulundu' + (d.arap ? ' (Arapça metin)' : ' (' + (aramaMealId() === 'tr.yazir' ? 'Elmalılı' : 'Diyanet') + ' meali)') + '</div>';
+        d.sonuc.slice(0, d.limit).forEach(i => {
+            const s = KV.S[i], a = KV.N[i];
+            const metin = d.arap ? escHtml(ayetArapca(i)) : vurgula(KV.meal[aramaMealId()][i], d.gruplar);
+            h += aramaSatiri('aramaGit(' + s + ',' + a + ')',
+                escHtml(sureAdi(s)) + ' ' + s + ':' + a + ' <small>• Sayfa ' + KV.P[i] + '</small>', metin, d.arap ? ' ar' : '');
+        });
+        if (toplam > d.limit) {
+            h += '<button class="btn btn-secondary" style="margin-top:8px;" onclick="aramaDahaFazla()">Daha fazla göster (' + (toplam - d.limit) + ')</button>';
+        }
+    } else if (!d.onek) {
+        h += '<div class="empty-state">Sonuç bulunamadı. Başka bir kelime deneyin.</div>';
+    }
+    kap.innerHTML = h;
+}
+
+function aramaDahaFazla() {
+    if (!aramaDurum) return;
+    aramaDurum.limit += 30;
+    aramaSonucCiz();
 }
 
 // =====================================================
@@ -1184,10 +2068,8 @@ function sayfaDegistir(pageId, element) {
     document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-    const targetPage = document.getElementById('page-' + pageId);
-    if (targetPage) targetPage.classList.add('active');
-    if (element) element.classList.add('active');
-    
+    document.getElementById('page-' + pageId).classList.add('active');
+    element.classList.add('active');
     lsSet('sonSayfa', pageId);
     window.scrollTo(0, 0);
 
@@ -1197,6 +2079,10 @@ function sayfaDegistir(pageId, element) {
     if (pageId === 'bayramlar') {
         siradakiBayramiHesapla();
     }
+    if (pageId === 'kuran') {
+        kuranSayfasiAcildi();
+    }
+    miniGoster();
 }
 
 document.addEventListener('keydown', function (e) {
@@ -1212,15 +2098,15 @@ document.addEventListener('keydown', function (e) {
 document.addEventListener("DOMContentLoaded", function() {
     zikirCiz();
 
+    // Kayıtlı şehir
     const kayitliSehir = lsGet('sehir', 'Ankara');
     const sel = document.getElementById('sehir-secim');
-    if (sel && sel.querySelector('option[value="' + kayitliSehir + '"]')) sel.value = kayitliSehir;
+    if (sel.querySelector('option[value="' + kayitliSehir + '"]')) sel.value = kayitliSehir;
 
-    const ilkTab = document.querySelector('#page-dualar .vakit-tab');
-    if (ilkTab) duaKategoriDegistir('dualari', ilkTab);
-    
+    duaKategoriDegistir('dualari', document.querySelector('#page-dualar .vakit-tab'));
     esmalariYukle(esmaVeritabani);
-    initQuran(); // Kur'an ve hafız listesini ilkler
+    kuranListesiniGuncelle();
+    kuranBaslangic();
     bugunBilgisiYaz();
     siradakiBayramiHesapla();
     eskiVakitCachetemizle();
@@ -1228,12 +2114,13 @@ document.addEventListener("DOMContentLoaded", function() {
     if (lsGet('vakitModu', 'sehir') === 'gps') vakitleriKonumdanGetir();
     else vakitleriGuncelle();
 
+    // Canlı sayaçlar
     setInterval(function () {
         sonrakiVakitGuncelle();
-        const bayramPage = document.getElementById('page-bayramlar');
-        if (bayramPage && bayramPage.classList.contains('active')) geriSayimCiz();
+        if (document.getElementById('page-bayramlar').classList.contains('active')) geriSayimCiz();
     }, 1000);
 
+    // Gün değişince başlık ve vakitleri tazele
     let sonGun = bugunIso();
     setInterval(function () {
         const g = bugunIso();
@@ -1246,6 +2133,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }, 60000);
 
+    // Son açık sayfaya dön (Kıble hariç: izin istemlerini kendiliğinden tetiklemesin)
     const sonSayfa = lsGet('sonSayfa', 'zikir');
     if (sonSayfa !== 'zikir' && sonSayfa !== 'kible') {
         const nav = document.querySelector('.nav-item[data-page="' + sonSayfa + '"]');

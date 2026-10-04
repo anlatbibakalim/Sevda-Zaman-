@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="description" content="Namaz vakitleri, zikirmatik, kıble pusulası, dualar, Esmaül Hüsna, Kur'an dinletisi ve dini günler takvimi.">
@@ -233,18 +234,85 @@
             </div>
         </div>
 
-        <!-- SAYFA 5: KUR'AN DİNLETİSİ -->
+        <!-- SAYFA 5: KUR'AN (OKU / DİNLE) -->
         <div id="page-kuran" class="page-section">
-            <div class="card">
-                <div class="card-title">🎧 Ödüllü Hafızlardan Kur'an & Dua (23 Eser)</div>
-                <select id="hafiz-secim" class="search-box" onchange="kuranListesiniGuncelle()">
-                    <option value="alafasy">Mishary Rashid Alafasy</option>
-                    <option value="abdulbasit">Abdulbasit Abdussamed</option>
-                    <option value="almuaiqly">Maher Al-Muaiqly</option>
-                    <option value="dosari">Yasser Al-Dosari</option>
-                    <option value="shuraim">Saud Al-Shuraim</option>
-                </select>
-                <div id="kuran-ses-listesi"></div>
+            <div class="vakit-tabs" id="kuran-mod-tabs">
+                <button class="vakit-tab active" data-mod="oku" onclick="kuranModDegistir('oku')">📖 Oku</button>
+                <button class="vakit-tab" data-mod="dinle" onclick="kuranModDegistir('dinle')">🎧 Dinle</button>
+            </div>
+
+            <!-- OKUMA MODU -->
+            <div id="kuran-mod-oku">
+                <div class="card" id="okuma-giris">
+                    <div class="card-title">📖 Kur'an-ı Kerim</div>
+                    <p style="font-size:0.9rem; line-height:1.5;">Sayfa sayfa ve cüz cüz okuma, kaldığınız yeri hatırlama, ayet sesi ve arama için Kur'an metni ile Türkçe meal <strong>bir kez</strong> indirilir (yaklaşık 3-4 MB) ve cihazınızda saklanır. Sonrasında internet olmadan da okuyabilirsiniz.</p>
+                    <button class="btn" id="indir-btn" style="margin-top:12px;" onclick="kuranVerisiniIndir()">⬇ İndir ve Başla</button>
+                    <div class="vakit-durum" id="indir-durum"></div>
+                    <div class="note">Metin ve ses: Al Quran Cloud. Meal: Diyanet İşleri Başkanlığı.</div>
+                </div>
+
+                <div id="okuma-ana" style="display:none;">
+                    <div class="card">
+                        <div class="card-title">🔍 Ara ve Git</div>
+                        <input type="search" id="kuran-arama" class="search-box" placeholder="Sure adı, 2:255 veya kelime (sabır, namaz, tevbe...)" oninput="aramaGecikmeli()" onkeydown="if(event.key==='Enter'){kuranAraYap();}">
+                        <div id="kuran-arama-sonuc"></div>
+                        <div class="btn-row okuma-secimler">
+                            <select id="cuz-secim" class="search-box" onchange="kuranCuzGit(this.value)" aria-label="Cüz seçin"></select>
+                            <select id="sure-secim" class="search-box" onchange="kuranSureGit(this.value)" aria-label="Sure seçin"></select>
+                        </div>
+                        <div id="devam-alani"></div>
+                    </div>
+
+                    <div class="card" id="okuma-sayfa-kart">
+                        <div class="sayfa-nav">
+                            <button class="icon-btn" onclick="sayfaGez(-1)" aria-label="Önceki sayfa">‹</button>
+                            <div class="sayfa-bilgi">
+                                <strong id="okuma-sayfa-no">Sayfa 1 / 604</strong>
+                                <small id="okuma-sayfa-alt"></small>
+                            </div>
+                            <button class="icon-btn" onclick="sayfaGez(1)" aria-label="Sonraki sayfa">›</button>
+                        </div>
+                        <div class="progress" style="margin-bottom:10px;"><div class="progress-bar" id="okuma-ilerleme-bar"></div></div>
+                        <div class="btn-row cuz-gez">
+                            <button class="chip" onclick="cuzGez(-1)">⏮ Önceki cüz</button>
+                            <button class="chip" onclick="cuzGez(1)">Sonraki cüz ⏭</button>
+                        </div>
+
+                        <div class="okuma-ayar">
+                            <button class="icon-btn" onclick="kuranPunto(-1)" aria-label="Yazıyı küçült">A−</button>
+                            <button class="icon-btn" onclick="kuranPunto(1)" aria-label="Yazıyı büyüt">A+</button>
+                            <select id="meal-secim" class="search-box" onchange="mealDegistir()" aria-label="Meal seçimi">
+                                <option value="tr.diyanet">Meal: Diyanet</option>
+                                <option value="tr.yazir">Meal: Elmalılı</option>
+                                <option value="kapali">Sadece Arapça</option>
+                            </select>
+                            <select id="okuma-hafiz" class="search-box" onchange="hafizDegistir()" aria-label="Hafız seçimi"></select>
+                        </div>
+                        <div class="vakit-durum" id="okuma-durum"></div>
+
+                        <div id="okuma-icerik"></div>
+
+                        <div class="sayfa-nav" style="margin-top:12px;">
+                            <button class="btn btn-secondary" style="width:auto; flex:1;" onclick="sayfaGez(-1)">‹ Önceki</button>
+                            <button class="btn" style="width:auto; flex:1; margin-left:8px;" onclick="sayfaGez(1)">Sonraki ›</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DİNLEME MODU (mevcut hafız listesi) -->
+            <div id="kuran-mod-dinle" style="display:none;">
+                <div class="card">
+                    <div class="card-title">🎧 Ödüllü Hafızlardan Kur'an & Dua (23 Eser)</div>
+                    <select id="hafiz-secim" class="search-box" onchange="kuranListesiniGuncelle()">
+                        <option value="alafasy">Mishary Rashid Alafasy</option>
+                        <option value="abdulbasit">Abdulbasit Abdussamed</option>
+                        <option value="almuaiqly">Maher Al-Muaiqly</option>
+                        <option value="dosari">Yasser Al-Dosari</option>
+                        <option value="shuraim">Saud Al-Shuraim</option>
+                    </select>
+                    <div id="kuran-ses-listesi"></div>
+                </div>
             </div>
         </div>
 
@@ -348,6 +416,19 @@
 
     </div>
 
+    <!-- AYET MİNİ OYNATICI -->
+    <div class="mini-player" id="mini-player">
+        <div class="mp-bilgi" id="mp-bilgi">—</div>
+        <div class="mp-kontrol">
+            <button onclick="ayetOnceki()" aria-label="Önceki ayet">⏮</button>
+            <button class="mp-play" id="mp-play" onclick="ayetOynatDurdur()" aria-label="Çal / durdur">▶</button>
+            <button onclick="ayetSonraki()" aria-label="Sonraki ayet">⏭</button>
+            <button id="mp-isaret" onclick="ayetIsaretle()" aria-label="Yer imi">📌</button>
+            <button onclick="ayetKopyala()" aria-label="Kopyala">📋</button>
+        </div>
+        <div class="mp-durum" id="mp-durum"></div>
+    </div>
+
     <!-- ALT MENÜ -->
     <div class="bottom-nav" role="navigation" aria-label="Ana menü">
         <div class="nav-item active" data-page="zikir" role="button" tabindex="0" onclick="sayfaDegistir('zikir', this)">
@@ -387,5 +468,13 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script src="app.js"></script>
+    <script>
+        // Çevrimdışı çalışma + güncellemelerin otomatik gelmesi için servis çalışanı
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('sw.js').catch(function () {});
+            });
+        }
+    </script>
 </body>
 </html>
